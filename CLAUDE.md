@@ -104,6 +104,17 @@ public/ # Static assets
 npm run dev       # Start dev server
 npm run build     # Production build
 npm run lint      # Run ESLint
+```
+
+---
+
+## Routes
+
+| Path | Description |
+|------|-------------|
+| `/` | Landing page / list overview for authenticated users |
+| `/l/[id]` | View/edit a list (authenticated) |
+| `/s/[token]` | Public share link (read-only for anonymous) |
 
 ---
 
