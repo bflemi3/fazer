@@ -32,8 +32,18 @@
     "emptyDescription": "Create your first list to get started",
     "newList": "New list",
     "newListPlaceholder": "List name",
+    "renameTitle": "Rename list",
     "deleteTitle": "Delete list",
     "deleteDescription": "Are you sure you want to delete this list? This action cannot be undone.",
     "created": "Created {time}"
+  },
+  "todos": {
+    "empty": "No items yet",
+    "emptyDescription": "Add your first item to get started",
+    "newTodo": "New item",
+    "newTodoPlaceholder": "What needs to be done?",
+    "createHint": "Press Enter to add, Escape to cancel",
+    "deleteTitle": "Delete item",
+    "deleteDescription": "Are you sure you want to delete this item?"
   }
 }

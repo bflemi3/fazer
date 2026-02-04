@@ -4,9 +4,10 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { formatDistanceToNow } from 'date-fns'
-import { MoreHorizontal, Trash2, Share2 } from 'lucide-react'
-import { useDeleteList } from '@/lib/hooks/use-lists'
+import { MoreHorizontal, Trash2, Share2, Pencil } from 'lucide-react'
+import { useDeleteList, useRenameList } from '@/lib/hooks/use-lists'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,6 +24,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import type { List } from '@/lib/hooks/use-lists'
 
 type Props = {
@@ -33,11 +40,24 @@ export function ListItem({ list }: Props) {
   const t = useTranslations()
   const router = useRouter()
   const deleteList = useDeleteList()
+  const renameList = useRenameList()
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showRenameDialog, setShowRenameDialog] = useState(false)
+  const [newName, setNewName] = useState(list.name)
 
   async function handleDelete() {
     await deleteList.mutateAsync(list.id)
     setShowDeleteDialog(false)
+  }
+
+  async function handleRename(e: React.FormEvent) {
+    e.preventDefault()
+    if (!newName.trim() || newName.trim() === list.name) {
+      setShowRenameDialog(false)
+      return
+    }
+    await renameList.mutateAsync({ id: list.id, name: newName.trim() })
+    setShowRenameDialog(false)
   }
 
   return (
@@ -66,6 +86,10 @@ export function ListItem({ list }: Props) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setShowRenameDialog(true)}>
+              <Pencil className="h-4 w-4" />
+              {t('common.rename')}
+            </DropdownMenuItem>
             <DropdownMenuItem disabled>
               <Share2 className="h-4 w-4" />
               {t('common.share')}
@@ -100,6 +124,30 @@ export function ListItem({ list }: Props) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={showRenameDialog} onOpenChange={setShowRenameDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('lists.renameTitle')}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleRename} className="space-y-4">
+            <Input
+              autoFocus
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder={t('lists.newListPlaceholder')}
+            />
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setShowRenameDialog(false)}>
+                {t('common.cancel')}
+              </Button>
+              <Button type="submit" disabled={!newName.trim() || renameList.isPending}>
+                {t('common.save')}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

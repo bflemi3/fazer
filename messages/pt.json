@@ -32,8 +32,18 @@
     "emptyDescription": "Crie sua primeira lista para começar",
     "newList": "Nova lista",
     "newListPlaceholder": "Nome da lista",
+    "renameTitle": "Renomear lista",
     "deleteTitle": "Excluir lista",
     "deleteDescription": "Tem certeza que deseja excluir esta lista? Esta ação não pode ser desfeita.",
     "created": "Criada {time}"
+  },
+  "todos": {
+    "empty": "Nenhum item ainda",
+    "emptyDescription": "Adicione seu primeiro item para começar",
+    "newTodo": "Novo item",
+    "newTodoPlaceholder": "O que precisa ser feito?",
+    "createHint": "Pressione Enter para adicionar, Escape para cancelar",
+    "deleteTitle": "Excluir item",
+    "deleteDescription": "Tem certeza que deseja excluir este item?"
   }
 }

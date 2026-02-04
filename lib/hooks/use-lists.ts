@@ -91,7 +91,31 @@ export function useCreateList() {
 
   return useMutation({
     mutationFn: createList,
-    onSuccess: () => {
+    onMutate: async (name) => {
+      await queryClient.cancelQueries({ queryKey: listsQueryOptions.queryKey })
+      const previous = queryClient.getQueryData<List[]>(listsQueryOptions.queryKey)
+
+      // Optimistically add the new list
+      const optimisticList: List = {
+        id: crypto.randomUUID(),
+        name,
+        owner_id: '',
+        share_token: '',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+      queryClient.setQueryData<List[]>(listsQueryOptions.queryKey, (old) =>
+        old ? [optimisticList, ...old] : [optimisticList]
+      )
+
+      return { previous }
+    },
+    onError: (_err, _name, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(listsQueryOptions.queryKey, context.previous)
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: listsQueryOptions.queryKey })
     },
   })
@@ -102,7 +126,23 @@ export function useDeleteList() {
 
   return useMutation({
     mutationFn: deleteList,
-    onSuccess: () => {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: listsQueryOptions.queryKey })
+      const previous = queryClient.getQueryData<List[]>(listsQueryOptions.queryKey)
+
+      // Optimistically remove the list
+      queryClient.setQueryData<List[]>(listsQueryOptions.queryKey, (old) =>
+        old?.filter((list) => list.id !== id)
+      )
+
+      return { previous }
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(listsQueryOptions.queryKey, context.previous)
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: listsQueryOptions.queryKey })
     },
   })
@@ -113,7 +153,23 @@ export function useRenameList() {
 
   return useMutation({
     mutationFn: renameList,
-    onSuccess: () => {
+    onMutate: async ({ id, name }) => {
+      await queryClient.cancelQueries({ queryKey: listsQueryOptions.queryKey })
+      const previous = queryClient.getQueryData<List[]>(listsQueryOptions.queryKey)
+
+      // Optimistically update the list name
+      queryClient.setQueryData<List[]>(listsQueryOptions.queryKey, (old) =>
+        old?.map((list) => (list.id === id ? { ...list, name } : list))
+      )
+
+      return { previous }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(listsQueryOptions.queryKey, context.previous)
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: listsQueryOptions.queryKey })
     },
   })
