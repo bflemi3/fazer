@@ -3,7 +3,10 @@
     "settings": "Configurações",
     "save": "Salvar",
     "cancel": "Cancelar",
-    "close": "Fechar"
+    "close": "Fechar",
+    "delete": "Excluir",
+    "rename": "Renomear",
+    "create": "Criar"
   },
   "auth": {
     "welcome": "Bem-vindo ao Fazer",
@@ -21,5 +24,13 @@
       "light": "Claro",
       "dark": "Escuro"
     }
+  },
+  "lists": {
+    "title": "Suas listas",
+    "empty": "Nenhuma lista ainda",
+    "emptyDescription": "Crie sua primeira lista para começar",
+    "newList": "Nova lista",
+    "newListPlaceholder": "Nome da lista",
+    "deleteConfirm": "Tem certeza que deseja excluir esta lista?"
   }
 }

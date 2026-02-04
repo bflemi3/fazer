@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { LocaleProvider } from "@/components/locale-provider";
 import { QueryProvider } from "@/components/query-provider";
-import { SettingsButton } from "@/components/settings-button";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -34,9 +33,6 @@ export default function RootLayout({
         <ThemeProvider>
           <QueryProvider>
             <LocaleProvider>
-              <div className="fixed right-4 top-4 z-50">
-                <SettingsButton />
-              </div>
               {children}
             </LocaleProvider>
           </QueryProvider>

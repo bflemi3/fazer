@@ -1,12 +1,11 @@
 'use client'
 
-import { useTranslations } from 'next-intl'
+import { LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 
 export function SignOutButton() {
-  const t = useTranslations('auth')
   const router = useRouter()
   const supabase = createClient()
 
@@ -17,8 +16,13 @@ export function SignOutButton() {
   }
 
   return (
-    <Button variant="outline" onClick={handleSignOut}>
-      {t('signOut')}
+    <Button
+      variant="outline"
+      size="icon"
+      onClick={handleSignOut}
+      aria-label="Sign out"
+    >
+      <LogOut className="h-4 w-4" />
     </Button>
   )
 }

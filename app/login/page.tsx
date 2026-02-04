@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
+import { SettingsButton } from '@/components/settings-button'
 
 export default function LoginPage() {
   const t = useTranslations('auth')
@@ -19,6 +20,9 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+      <div className="fixed right-4 top-4 z-50">
+        <SettingsButton />
+      </div>
       <div className="w-full max-w-sm px-6">
         <div className="flex flex-col items-center gap-8">
           <div className="text-center">

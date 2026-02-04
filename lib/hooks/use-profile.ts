@@ -2,7 +2,10 @@ import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import type { Tables } from '@/supabase/database.types'
 
-type Profile = Tables<'profiles'>
+export type Profile = Tables<'profiles'> & {
+  firstName: string
+  displayName: string
+}
 
 async function fetchProfile(): Promise<Profile | null> {
   const supabase = createClient()
@@ -16,7 +19,16 @@ async function fetchProfile(): Promise<Profile | null> {
     .eq('id', user.id)
     .single()
 
-  return data
+  if (!data) return null
+
+  const firstName = data.display_name?.split(' ')[0] || ''
+  const displayName = firstName || data.email || ''
+
+  return {
+    ...data,
+    firstName,
+    displayName,
+  }
 }
 
 export function useProfile() {
@@ -25,13 +37,10 @@ export function useProfile() {
     queryFn: fetchProfile,
   })
 
-  const firstName = profile?.display_name?.split(' ')[0] || ''
-  const displayName = firstName || profile?.email || ''
-
   return {
     profile,
     isLoading,
-    firstName,
-    displayName,
+    firstName: profile?.firstName || '',
+    displayName: profile?.displayName || '',
   }
 }
