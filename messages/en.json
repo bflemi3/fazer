@@ -33,6 +33,7 @@
     "newList": "New list",
     "newListPlaceholder": "List name",
     "renameTitle": "Rename list",
+    "deleteList": "Delete list",
     "deleteTitle": "Delete list",
     "deleteDescription": "Are you sure you want to delete this list? This action cannot be undone.",
     "created": "Created {time}"

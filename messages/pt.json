@@ -33,6 +33,7 @@
     "newList": "Nova lista",
     "newListPlaceholder": "Nome da lista",
     "renameTitle": "Renomear lista",
+    "deleteList": "Excluir lista",
     "deleteTitle": "Excluir lista",
     "deleteDescription": "Tem certeza que deseja excluir esta lista? Esta ação não pode ser desfeita.",
     "created": "Criada {time}"

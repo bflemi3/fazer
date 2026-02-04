@@ -1,13 +1,29 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { ArrowLeft, Plus } from 'lucide-react'
+import { ArrowLeft, Plus, MoreHorizontal, Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useTodos, useCreateTodo } from '@/lib/hooks/use-todos'
-import { useRenameList } from '@/lib/hooks/use-lists'
+import { useRenameList, useDeleteList } from '@/lib/hooks/use-lists'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { SettingsButton } from './settings-button'
 import { CreateListModal } from './create-list-modal'
 import { TodoItem } from './todo-item'
@@ -23,12 +39,14 @@ export function ListContent({ list }: Props) {
   const { data: todos, isLoading } = useTodos(list.id)
   const createTodo = useCreateTodo(list.id)
   const renameList = useRenameList()
+  const deleteList = useDeleteList()
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const [newTodoTitle, setNewTodoTitle] = useState('')
   const [isEditingName, setIsEditingName] = useState(false)
   const [listName, setListName] = useState(list.name)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const nameInputRef = useRef<HTMLInputElement>(null)
 
@@ -57,7 +75,11 @@ export function ListContent({ list }: Props) {
       position: nextPosition,
     })
     setNewTodoTitle('')
-    // Keep creating mode active, focus will be maintained
+
+    // Scroll input into view after new todo is rendered
+    setTimeout(() => {
+      inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 50)
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -88,6 +110,11 @@ export function ListContent({ list }: Props) {
       setListName(list.name)
       setIsEditingName(false)
     }
+  }
+
+  async function handleDeleteList() {
+    await deleteList.mutateAsync(list.id)
+    router.push('/')
   }
 
   if (isLoading) {
@@ -132,23 +159,41 @@ export function ListContent({ list }: Props) {
               {t('lists.title')}
             </Button>
           </div>
-          {isEditingName ? (
-            <Input
-              ref={nameInputRef}
-              value={listName}
-              onChange={(e) => setListName(e.target.value)}
-              onBlur={handleSaveName}
-              onKeyDown={handleNameKeyDown}
-              className="mt-4 h-auto py-1 text-2xl md:text-2xl font-semibold tracking-tight"
-            />
-          ) : (
-            <h1
-              onClick={() => setIsEditingName(true)}
-              className="mt-4 cursor-pointer text-2xl font-semibold tracking-tight text-zinc-900 hover:text-zinc-600 dark:text-zinc-50 dark:hover:text-zinc-300"
-            >
-              {list.name}
-            </h1>
-          )}
+          <div className="mt-4 flex items-start justify-between gap-2">
+            {isEditingName ? (
+              <Input
+                ref={nameInputRef}
+                value={listName}
+                onChange={(e) => setListName(e.target.value)}
+                onBlur={handleSaveName}
+                onKeyDown={handleNameKeyDown}
+                className="h-auto flex-1 py-1 text-2xl md:text-2xl font-semibold tracking-tight"
+              />
+            ) : (
+              <h1
+                onClick={() => setIsEditingName(true)}
+                className="cursor-pointer text-2xl font-semibold tracking-tight text-zinc-900 hover:text-zinc-600 dark:text-zinc-50 dark:hover:text-zinc-300"
+              >
+                {list.name}
+              </h1>
+            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem
+                  onClick={() => setShowDeleteDialog(true)}
+                  className="text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400 [&>svg]:text-red-600 dark:[&>svg]:text-red-400"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  {t('lists.deleteList')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         {/* Empty state */}
@@ -205,6 +250,26 @@ export function ListContent({ list }: Props) {
           </div>
         )}
       </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('lists.deleteTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('lists.deleteDescription')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteList}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {t('common.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
