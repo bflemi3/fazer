@@ -62,6 +62,20 @@ async function deleteTodo(id: string): Promise<void> {
   if (error) throw error
 }
 
+async function reorderTodos(updates: { id: string; position: number }[]): Promise<void> {
+  const supabase = createClient()
+
+  // Update each todo's position
+  for (const { id, position } of updates) {
+    const { error } = await supabase
+      .from('todos')
+      .update({ position })
+      .eq('id', id)
+
+    if (error) throw error
+  }
+}
+
 export function todosQueryOptions(listId: string) {
   return queryOptions({
     queryKey: ['todos', listId],
@@ -162,6 +176,41 @@ export function useDeleteTodo(listId: string) {
       return { previous }
     },
     onError: (_err, _id, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKey, context.previous)
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey })
+    },
+  })
+}
+
+export function useReorderTodos(listId: string) {
+  const queryClient = useQueryClient()
+  const queryKey = todosQueryOptions(listId).queryKey
+
+  return useMutation({
+    mutationFn: reorderTodos,
+    onMutate: async (updates) => {
+      await queryClient.cancelQueries({ queryKey })
+      const previous = queryClient.getQueryData<Todo[]>(queryKey)
+
+      // Optimistically update positions
+      queryClient.setQueryData<Todo[]>(queryKey, (old) => {
+        if (!old) return old
+        const positionMap = new Map(updates.map((u) => [u.id, u.position]))
+        return old
+          .map((todo) => ({
+            ...todo,
+            position: positionMap.has(todo.id) ? positionMap.get(todo.id)! : todo.position,
+          }))
+          .sort((a, b) => a.position - b.position)
+      })
+
+      return { previous }
+    },
+    onError: (_err, _vars, context) => {
       if (context?.previous) {
         queryClient.setQueryData(queryKey, context.previous)
       }

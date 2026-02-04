@@ -32,6 +32,14 @@
     "emptyDescription": "Create your first list to get started",
     "newList": "New list",
     "newListPlaceholder": "List name",
+    "searchPlaceholder": "Search lists...",
+    "noResults": "No lists found",
+    "sort": {
+      "newest": "Newest first",
+      "oldest": "Oldest first",
+      "name-asc": "Name A-Z",
+      "name-desc": "Name Z-A"
+    },
     "renameTitle": "Rename list",
     "deleteList": "Delete list",
     "deleteTitle": "Delete list",
@@ -45,6 +53,14 @@
     "newTodoPlaceholder": "What needs to be done?",
     "createHint": "Press Enter to add, Escape to cancel",
     "deleteTitle": "Delete item",
-    "deleteDescription": "Are you sure you want to delete this item?"
+    "deleteDescription": "Are you sure you want to delete this item?",
+    "sort": {
+      "incomplete-first": "Incomplete first",
+      "complete-first": "Complete first",
+      "newest": "Newest first",
+      "oldest": "Oldest first",
+      "name-asc": "Name A-Z",
+      "name-desc": "Name Z-A"
+    }
   }
 }

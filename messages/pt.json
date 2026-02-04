@@ -32,6 +32,14 @@
     "emptyDescription": "Crie sua primeira lista para começar",
     "newList": "Nova lista",
     "newListPlaceholder": "Nome da lista",
+    "searchPlaceholder": "Buscar listas...",
+    "noResults": "Nenhuma lista encontrada",
+    "sort": {
+      "newest": "Mais recentes",
+      "oldest": "Mais antigas",
+      "name-asc": "Nome A-Z",
+      "name-desc": "Nome Z-A"
+    },
     "renameTitle": "Renomear lista",
     "deleteList": "Excluir lista",
     "deleteTitle": "Excluir lista",
@@ -45,6 +53,14 @@
     "newTodoPlaceholder": "O que precisa ser feito?",
     "createHint": "Pressione Enter para adicionar, Escape para cancelar",
     "deleteTitle": "Excluir item",
-    "deleteDescription": "Tem certeza que deseja excluir este item?"
+    "deleteDescription": "Tem certeza que deseja excluir este item?",
+    "sort": {
+      "incomplete-first": "Incompletos primeiro",
+      "complete-first": "Completos primeiro",
+      "newest": "Mais recentes",
+      "oldest": "Mais antigos",
+      "name-asc": "Nome A-Z",
+      "name-desc": "Nome Z-A"
+    }
   }
 }

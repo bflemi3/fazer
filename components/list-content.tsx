@@ -1,10 +1,27 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
-import { ArrowLeft, Plus, MoreHorizontal, Trash2 } from 'lucide-react'
+import { useState, useRef, useEffect, useMemo } from 'react'
+import { ArrowLeft, Plus, MoreHorizontal, Trash2, ArrowUpDown } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { useTodos, useCreateTodo } from '@/lib/hooks/use-todos'
+import {
+  DndContext,
+  DragOverlay,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragStartEvent,
+  DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { useTodos, useCreateTodo, useReorderTodos } from '@/lib/hooks/use-todos'
 import { useRenameList, useDeleteList } from '@/lib/hooks/use-lists'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,6 +29,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
@@ -26,8 +44,11 @@ import {
 } from '@/components/ui/alert-dialog'
 import { SettingsButton } from './settings-button'
 import { CreateListModal } from './create-list-modal'
+import { SortableTodoItem } from './sortable-todo-item'
 import { TodoItem } from './todo-item'
 import type { Tables } from '@/supabase/database.types'
+
+type SortOption = 'incomplete-first' | 'complete-first' | 'newest' | 'oldest' | 'name-asc' | 'name-desc'
 
 type Props = {
   list: Tables<'lists'>
@@ -38,6 +59,7 @@ export function ListContent({ list }: Props) {
   const t = useTranslations()
   const { data: todos, isLoading } = useTodos(list.id)
   const createTodo = useCreateTodo(list.id)
+  const reorderTodos = useReorderTodos(list.id)
   const renameList = useRenameList()
   const deleteList = useDeleteList()
 
@@ -47,10 +69,61 @@ export function ListContent({ list }: Props) {
   const [isEditingName, setIsEditingName] = useState(false)
   const [listName, setListName] = useState(list.name)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [sortBy, setSortBy] = useState<SortOption>('incomplete-first')
+  const [activeId, setActiveId] = useState<string | null>(null)
+  const [tempTodos, setTempTodos] = useState<typeof todos | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const nameInputRef = useRef<HTMLInputElement>(null)
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        delay: 200,
+        tolerance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
   const hasTodos = todos && todos.length > 0
+
+  // Use tempTodos during drag to avoid flicker
+  const activeTodos = tempTodos ?? todos
+
+  const sortedTodos = useMemo(() => {
+    if (!activeTodos) return []
+
+    const result = [...activeTodos]
+
+    result.sort((a, b) => {
+      switch (sortBy) {
+        case 'incomplete-first':
+          if (a.is_complete !== b.is_complete) {
+            return a.is_complete ? 1 : -1
+          }
+          return a.position - b.position
+        case 'complete-first':
+          if (a.is_complete !== b.is_complete) {
+            return a.is_complete ? -1 : 1
+          }
+          return a.position - b.position
+        case 'newest':
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        case 'oldest':
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        case 'name-asc':
+          return a.title.localeCompare(b.title)
+        case 'name-desc':
+          return b.title.localeCompare(a.title)
+        default:
+          return a.position - b.position
+      }
+    })
+
+    return result
+  }, [activeTodos, sortBy])
 
   useEffect(() => {
     if (isCreating && inputRef.current) {
@@ -115,6 +188,42 @@ export function ListContent({ list }: Props) {
   async function handleDeleteList() {
     await deleteList.mutateAsync(list.id)
     router.push('/')
+  }
+
+  function handleDragStart(event: DragStartEvent) {
+    setActiveId(event.active.id as string)
+    // Trigger haptic feedback on supported devices (Android)
+    if (navigator.vibrate) {
+      navigator.vibrate(50)
+    }
+  }
+
+  async function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    setActiveId(null)
+
+    if (over && active.id !== over.id && todos) {
+      const oldIndex = todos.findIndex((todo) => todo.id === active.id)
+      const newIndex = todos.findIndex((todo) => todo.id === over.id)
+
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const reordered = arrayMove(todos, oldIndex, newIndex).map((todo, index) => ({
+          ...todo,
+          position: index,
+        }))
+
+        // Set local state immediately to avoid flicker
+        setTempTodos(reordered)
+
+        const updates = reordered.map((todo) => ({
+          id: todo.id,
+          position: todo.position,
+        }))
+
+        await reorderTodos.mutateAsync(updates)
+        setTempTodos(null)
+      }
+    }
   }
 
   if (isLoading) {
@@ -186,9 +295,9 @@ export function ListContent({ list }: Props) {
               <DropdownMenuContent align="start">
                 <DropdownMenuItem
                   onClick={() => setShowDeleteDialog(true)}
-                  className="text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400 [&>svg]:text-red-600 dark:[&>svg]:text-red-400"
+                  className="text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
                   {t('lists.deleteList')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -214,10 +323,86 @@ export function ListContent({ list }: Props) {
 
         {/* Todo list */}
         {(hasTodos || isCreating) && (
-          <div className="space-y-2">
-            {todos?.map((todo) => (
-              <TodoItem key={todo.id} todo={todo} listId={list.id} />
-            ))}
+          <div className="space-y-4">
+            {/* Sort dropdown */}
+            {hasTodos && (
+              <div className="flex justify-end">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon">
+                      <ArrowUpDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuCheckboxItem
+                      checked={sortBy === 'incomplete-first'}
+                      onCheckedChange={() => setSortBy('incomplete-first')}
+                    >
+                      {t('todos.sort.incomplete-first')}
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={sortBy === 'complete-first'}
+                      onCheckedChange={() => setSortBy('complete-first')}
+                    >
+                      {t('todos.sort.complete-first')}
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={sortBy === 'newest'}
+                      onCheckedChange={() => setSortBy('newest')}
+                    >
+                      {t('todos.sort.newest')}
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={sortBy === 'oldest'}
+                      onCheckedChange={() => setSortBy('oldest')}
+                    >
+                      {t('todos.sort.oldest')}
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={sortBy === 'name-asc'}
+                      onCheckedChange={() => setSortBy('name-asc')}
+                    >
+                      {t('todos.sort.name-asc')}
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={sortBy === 'name-desc'}
+                      onCheckedChange={() => setSortBy('name-desc')}
+                    >
+                      {t('todos.sort.name-desc')}
+                    </DropdownMenuCheckboxItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
+
+            {/* Sortable todos */}
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={sortedTodos.map((todo) => todo.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="space-y-2">
+                  {sortedTodos.map((todo) => (
+                    <SortableTodoItem key={todo.id} todo={todo} listId={list.id} />
+                  ))}
+                </div>
+              </SortableContext>
+              <DragOverlay dropAnimation={null}>
+                {activeId ? (
+                  <div className="rounded-lg opacity-90 shadow-lg outline outline-2 outline-zinc-400 dark:outline-zinc-500">
+                    <TodoItem
+                      todo={sortedTodos.find((t) => t.id === activeId)!}
+                      listId={list.id}
+                    />
+                  </div>
+                ) : null}
+              </DragOverlay>
+            </DndContext>
 
             {/* Inline create input */}
             {isCreating && (
