@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, queryOptions } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import type { Tables } from '@/supabase/database.types'
 
@@ -13,6 +13,18 @@ async function fetchLists(): Promise<List[]> {
 
   if (error) throw error
   return data || []
+}
+
+async function fetchList(id: string): Promise<List | null> {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('lists')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (error) throw error
+  return data
 }
 
 async function createList(name: string): Promise<List> {
@@ -54,11 +66,24 @@ async function renameList({ id, name }: { id: string; name: string }): Promise<L
   return data
 }
 
-export function useLists() {
-  return useQuery({
-    queryKey: ['lists'],
-    queryFn: fetchLists,
+export const listsQueryOptions = queryOptions({
+  queryKey: ['lists'],
+  queryFn: fetchLists,
+})
+
+export function listQueryOptions(id: string) {
+  return queryOptions({
+    queryKey: ['lists', id],
+    queryFn: () => fetchList(id),
   })
+}
+
+export function useLists() {
+  return useQuery(listsQueryOptions)
+}
+
+export function useList(id: string) {
+  return useQuery(listQueryOptions(id))
 }
 
 export function useCreateList() {
@@ -67,7 +92,7 @@ export function useCreateList() {
   return useMutation({
     mutationFn: createList,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['lists'] })
+      queryClient.invalidateQueries({ queryKey: listsQueryOptions.queryKey })
     },
   })
 }
@@ -78,7 +103,7 @@ export function useDeleteList() {
   return useMutation({
     mutationFn: deleteList,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['lists'] })
+      queryClient.invalidateQueries({ queryKey: listsQueryOptions.queryKey })
     },
   })
 }
@@ -89,7 +114,7 @@ export function useRenameList() {
   return useMutation({
     mutationFn: renameList,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['lists'] })
+      queryClient.invalidateQueries({ queryKey: listsQueryOptions.queryKey })
     },
   })
 }

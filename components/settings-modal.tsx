@@ -2,7 +2,9 @@
 
 import { useTranslations } from 'next-intl'
 import { useTheme } from 'next-themes'
-import { Monitor, Sun, Moon, Check } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Monitor, Sun, Moon, Check, LogOut } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 import { useLocale } from './locale-provider'
 import { locales, localeNames, type Locale } from '@/lib/i18n/config'
 import {
@@ -26,8 +28,17 @@ const themes = [
 
 export function SettingsModal({ open, onClose }: SettingsModalProps) {
   const t = useTranslations()
+  const router = useRouter()
   const { theme, setTheme } = useTheme()
   const { locale, setLocale } = useLocale()
+  const supabase = createClient()
+
+  async function handleSignOut() {
+    await supabase.auth.signOut()
+    onClose()
+    router.push('/login')
+    router.refresh()
+  }
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
@@ -76,6 +87,18 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
                 </Button>
               ))}
             </div>
+          </div>
+
+          {/* Sign out */}
+          <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={handleSignOut}
+            >
+              <LogOut className="h-4 w-4" />
+              {t('auth.signOut')}
+            </Button>
           </div>
         </div>
       </DialogContent>

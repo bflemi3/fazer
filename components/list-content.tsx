@@ -1,11 +1,12 @@
 'use client'
 
-import { ArrowLeft } from 'lucide-react'
+import { useState } from 'react'
+import { ArrowLeft, Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
-import { SignOutButton } from './sign-out-button'
 import { SettingsButton } from './settings-button'
+import { CreateListModal } from './create-list-modal'
 import type { Tables } from '@/supabase/database.types'
 
 type Props = {
@@ -15,16 +16,29 @@ type Props = {
 export function ListContent({ list }: Props) {
   const router = useRouter()
   const t = useTranslations()
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       {/* Top right buttons */}
       <div className="fixed right-4 top-4 z-50 flex gap-2">
-        <SignOutButton />
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setIsCreateModalOpen(true)}
+          aria-label="Create new list"
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
         <SettingsButton />
       </div>
 
-      <div className="mx-auto max-w-2xl px-4 py-8">
+      <CreateListModal
+        open={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      />
+
+      <div className="px-4 py-8">
         {/* Header with back button */}
         <div className="mb-8">
           <Button

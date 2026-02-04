@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, queryOptions } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import type { Tables } from '@/supabase/database.types'
 
@@ -31,11 +31,13 @@ async function fetchProfile(): Promise<Profile | null> {
   }
 }
 
+export const profileQueryOptions = queryOptions({
+  queryKey: ['profile'],
+  queryFn: fetchProfile,
+})
+
 export function useProfile() {
-  const { data: profile, isLoading } = useQuery({
-    queryKey: ['profile'],
-    queryFn: fetchProfile,
-  })
+  const { data: profile, isLoading } = useQuery(profileQueryOptions)
 
   return {
     profile,
