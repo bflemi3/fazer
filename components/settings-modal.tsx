@@ -1,0 +1,92 @@
+'use client'
+
+import { useTranslations } from 'next-intl'
+import { useTheme } from 'next-themes'
+import { useEffect, useState } from 'react'
+import { Monitor, Sun, Moon, Check } from 'lucide-react'
+import { useLocale } from './locale-provider'
+import { locales, localeNames, type Locale } from '@/lib/i18n/config'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+
+type SettingsModalProps = {
+  open: boolean
+  onClose: () => void
+}
+
+const themes = [
+  { value: 'system', icon: Monitor },
+  { value: 'light', icon: Sun },
+  { value: 'dark', icon: Moon },
+] as const
+
+export function SettingsModal({ open, onClose }: SettingsModalProps) {
+  const t = useTranslations()
+  const { theme, setTheme } = useTheme()
+  const { locale, setLocale } = useLocale()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  return (
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t('settings.title')}</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-6">
+          {/* Language */}
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">
+              {t('settings.language')}
+            </label>
+            <div className="flex gap-2">
+              {locales.map((loc) => (
+                <Button
+                  key={loc}
+                  variant={locale === loc ? 'default' : 'outline'}
+                  className="flex-1"
+                  onClick={() => setLocale(loc)}
+                >
+                  {localeNames[loc as Locale]}
+                  {locale === loc && <Check className="h-4 w-4" />}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {/* Appearance */}
+          {mounted && (
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">
+                {t('settings.appearance')}
+              </label>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                {themes.map(({ value, icon: Icon }) => (
+                  <Button
+                    key={value}
+                    variant={theme === value ? 'default' : 'outline'}
+                    className="flex-1"
+                    onClick={() => setTheme(value)}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {t(`settings.theme.${value}`)}
+                    {theme === value && <Check className="h-4 w-4" />}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}

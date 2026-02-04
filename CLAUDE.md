@@ -18,8 +18,8 @@
 - **Styling:** Tailwind CSS v4 + shadcn/ui
 - **Backend:** Supabase (Postgres, Auth, Realtime)
 - **Hosting:** Vercel
-- **Auth:** Google and Apple sign-in via Supabase Auth  
-  (email, name, avatar)
+- **Auth:** Google sign-in via Supabase Auth (email, name, avatar)
+- **i18n:** next-intl (locale-agnostic URLs, browser detection)
 
 ---
 
@@ -83,17 +83,30 @@
 - Avoid shortcuts that block future scaling or offline support.
 - Prefer predictable, well-understood patterns over novelty.
 
+### Components
+
+- **Use shadcn/ui components** whenever possible (Button, Dialog, Input, etc.)
+- Create **reusable custom components** in `components/` when:
+  - No shadcn component exists for the use case
+  - The design diverges significantly from shadcn defaults
+- Keep custom components minimal and composable
+- Follow shadcn patterns (variants, slots, cn() for className merging)
+
 ---
 
 ## Project structure
 
-app/ # Next.js App Router pages and layouts
-components/ # Reusable React components
-lib/ # Shared utilities (e.g. cn(), helpers)
-lib/sync/ # Offline queue, sync engine, reconciliation logic
-supabase/ # Supabase config, migrations, and types
-pwa/ # PWA assets (manifest, icons, service worker config)
-public/ # Static assets
+app/           # Next.js App Router pages and layouts
+components/    # Reusable React components
+lib/           # Shared utilities (e.g. cn(), helpers)
+lib/i18n/      # i18n configuration
+lib/supabase/  # Supabase client utilities
+lib/sync/      # Offline queue, sync engine, reconciliation logic
+messages/      # Translation files (en.json, pt.json, etc.)
+i18n/          # next-intl request config
+supabase/      # Supabase config, migrations, and types
+pwa/           # PWA assets (manifest, icons, service worker config)
+public/        # Static assets
 
 
 ---
@@ -113,8 +126,21 @@ npm run lint      # Run ESLint
 | Path | Description |
 |------|-------------|
 | `/` | Landing page / list overview for authenticated users |
+| `/login` | Sign-in page |
 | `/l/[id]` | View/edit a list (authenticated) |
 | `/s/[token]` | Public share link (read-only for anonymous) |
+
+---
+
+## Internationalization (i18n)
+
+- Uses **next-intl** for translations
+- Supported locales: `en` (English), `pt` (Portuguese)
+- URLs are locale-agnostic (no `/en/` or `/pt/` prefixes)
+- Detects user's browser language by default
+- User can override via Settings modal
+- Override stored in localStorage (`fazer-locale`) only if different from browser default
+- Translation files in `messages/` directory
 
 ---
 

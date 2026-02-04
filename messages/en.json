@@ -1,0 +1,25 @@
+{
+  "common": {
+    "settings": "Settings",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close"
+  },
+  "auth": {
+    "welcome": "Welcome to Fazer",
+    "signInDescription": "Sign in to manage your lists",
+    "continueWithGoogle": "Continue with Google",
+    "welcomeBack": "Welcome back",
+    "signOut": "Sign out"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "appearance": "Appearance",
+    "theme": {
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    }
+  }
+}

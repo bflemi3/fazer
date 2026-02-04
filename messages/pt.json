@@ -1,0 +1,25 @@
+{
+  "common": {
+    "settings": "Configurações",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "close": "Fechar"
+  },
+  "auth": {
+    "welcome": "Bem-vindo ao Fazer",
+    "signInDescription": "Faça login para gerenciar suas listas",
+    "continueWithGoogle": "Continuar com Google",
+    "welcomeBack": "Bem-vindo de volta",
+    "signOut": "Sair"
+  },
+  "settings": {
+    "title": "Configurações",
+    "language": "Idioma",
+    "appearance": "Aparência",
+    "theme": {
+      "system": "Sistema",
+      "light": "Claro",
+      "dark": "Escuro"
+    }
+  }
+}
