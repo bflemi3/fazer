@@ -38,19 +38,21 @@ export function ListContent({ list }: Props) {
         onClose={() => setIsCreateModalOpen(false)}
       />
 
-      <div className="px-4 py-8">
+      <div className="px-4 pt-4 pb-8">
         {/* Header with back button */}
         <div className="mb-8">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="mb-4 -ml-2"
-            onClick={() => router.push('/')}
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {t('lists.title')}
-          </Button>
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+          <div className="flex min-h-9 items-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="-ml-2"
+              onClick={() => router.push('/')}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              {t('lists.title')}
+            </Button>
+          </div>
+          <h1 className="mt-4 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
             {list.name}
           </h1>
         </div>

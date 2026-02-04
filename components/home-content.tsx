@@ -2,32 +2,22 @@
 
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { useRouter } from 'next/navigation'
-import { Plus, MoreHorizontal, Trash2 } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { useProfile } from '@/lib/hooks/use-profile'
-import { useLists, useDeleteList } from '@/lib/hooks/use-lists'
+import { useLists } from '@/lib/hooks/use-lists'
 import { Button } from '@/components/ui/button'
 import { SettingsButton } from './settings-button'
 import { CreateListModal } from './create-list-modal'
+import { ListItem } from './list-item'
 
 export function HomeContent() {
   const t = useTranslations()
-  const router = useRouter()
   const { firstName, isLoading: profileLoading } = useProfile()
   const { data: lists, isLoading: listsLoading } = useLists()
-  const deleteList = useDeleteList()
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [menuOpenId, setMenuOpenId] = useState<string | null>(null)
 
   const isLoading = profileLoading || listsLoading
-
-  async function handleDeleteList(id: string) {
-    if (confirm(t('lists.deleteConfirm'))) {
-      await deleteList.mutateAsync(id)
-    }
-    setMenuOpenId(null)
-  }
 
   if (isLoading) {
     return (
@@ -59,15 +49,17 @@ export function HomeContent() {
         onClose={() => setIsCreateModalOpen(false)}
       />
 
-      <div className="px-4 py-8">
+      <div className="px-4 pt-4 pb-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-            {t('auth.welcomeBack')}, {firstName}
-          </h1>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            {t('lists.title')}
-          </p>
+        <div className="mb-8 flex min-h-9 items-center">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+              {t('auth.welcomeBack')}, {firstName}
+            </h1>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+              {t('lists.title')}
+            </p>
+          </div>
         </div>
 
         {/* Empty state */}
@@ -98,42 +90,7 @@ export function HomeContent() {
 
             <div className="space-y-2">
               {lists.map((list) => (
-                <div
-                  key={list.id}
-                  className="group flex items-center justify-between rounded-lg border border-zinc-200 bg-white p-4 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
-                >
-                  <button
-                    onClick={() => router.push(`/l/${list.id}`)}
-                    className="flex-1 text-left"
-                  >
-                    <span className="font-medium text-zinc-900 dark:text-zinc-50">
-                      {list.name}
-                    </span>
-                  </button>
-
-                  <div className="relative">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="opacity-0 group-hover:opacity-100"
-                      onClick={() => setMenuOpenId(menuOpenId === list.id ? null : list.id)}
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-
-                    {menuOpenId === list.id && (
-                      <div className="absolute right-0 top-full z-10 mt-1 w-36 overflow-hidden rounded-lg border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-800 dark:bg-zinc-900">
-                        <button
-                          onClick={() => handleDeleteList(list.id)}
-                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-red-600 hover:bg-zinc-50 dark:text-red-400 dark:hover:bg-zinc-800"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          {t('common.delete')}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <ListItem key={list.id} list={list} />
               ))}
             </div>
           </>

@@ -6,7 +6,8 @@
     "close": "Fechar",
     "delete": "Excluir",
     "rename": "Renomear",
-    "create": "Criar"
+    "create": "Criar",
+    "share": "Compartilhar"
   },
   "auth": {
     "welcome": "Bem-vindo ao Fazer",
@@ -31,6 +32,8 @@
     "emptyDescription": "Crie sua primeira lista para começar",
     "newList": "Nova lista",
     "newListPlaceholder": "Nome da lista",
-    "deleteConfirm": "Tem certeza que deseja excluir esta lista?"
+    "deleteTitle": "Excluir lista",
+    "deleteDescription": "Tem certeza que deseja excluir esta lista? Esta ação não pode ser desfeita.",
+    "created": "Criada {time}"
   }
 }

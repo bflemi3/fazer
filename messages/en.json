@@ -6,7 +6,8 @@
     "close": "Close",
     "delete": "Delete",
     "rename": "Rename",
-    "create": "Create"
+    "create": "Create",
+    "share": "Share"
   },
   "auth": {
     "welcome": "Welcome to Fazer",
@@ -31,6 +32,8 @@
     "emptyDescription": "Create your first list to get started",
     "newList": "New list",
     "newListPlaceholder": "List name",
-    "deleteConfirm": "Are you sure you want to delete this list?"
+    "deleteTitle": "Delete list",
+    "deleteDescription": "Are you sure you want to delete this list? This action cannot be undone.",
+    "created": "Created {time}"
   }
 }
