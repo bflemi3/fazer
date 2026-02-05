@@ -52,6 +52,8 @@
     "newTodo": "Novo item",
     "newTodoPlaceholder": "O que precisa ser feito?",
     "createHint": "Pressione Enter para adicionar, Escape para cancelar",
+    "editHintTouch": "Toque duas vezes em qualquer item para editá-lo",
+    "editHintDesktop": "Clique duas vezes em qualquer item para editá-lo",
     "deleteTitle": "Excluir item",
     "deleteDescription": "Tem certeza que deseja excluir este item?",
     "sort": {

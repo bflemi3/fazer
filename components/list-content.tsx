@@ -1,27 +1,10 @@
 'use client'
 
 import { useState, useRef, useEffect, useMemo } from 'react'
-import { ArrowLeft, Plus, MoreHorizontal, Trash2, ArrowUpDown } from 'lucide-react'
+import { ArrowLeft, Plus, MoreHorizontal, Trash2, ArrowUpDown, X, Lightbulb } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import {
-  DndContext,
-  DragOverlay,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragStartEvent,
-  DragEndEvent,
-} from '@dnd-kit/core'
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable'
-import { useTodos, useCreateTodo, useReorderTodos } from '@/lib/hooks/use-todos'
+import { useTodos, useCreateTodo } from '@/lib/hooks/use-todos'
 import { useRenameList, useDeleteList } from '@/lib/hooks/use-lists'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -44,7 +27,6 @@ import {
 } from '@/components/ui/alert-dialog'
 import { SettingsButton } from './settings-button'
 import { CreateListModal } from './create-list-modal'
-import { SortableTodoItem } from './sortable-todo-item'
 import { TodoItem } from './todo-item'
 import type { Tables } from '@/supabase/database.types'
 
@@ -59,7 +41,6 @@ export function ListContent({ list }: Props) {
   const t = useTranslations()
   const { data: todos, isLoading } = useTodos(list.id)
   const createTodo = useCreateTodo(list.id)
-  const reorderTodos = useReorderTodos(list.id)
   const renameList = useRenameList()
   const deleteList = useDeleteList()
 
@@ -69,45 +50,36 @@ export function ListContent({ list }: Props) {
   const [isEditingName, setIsEditingName] = useState(false)
   const [listName, setListName] = useState(list.name)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const [sortBy, setSortBy] = useState<SortOption>('incomplete-first')
-  const [activeId, setActiveId] = useState<string | null>(null)
-  const [tempTodos, setTempTodos] = useState<typeof todos | null>(null)
+  const [sortBy, setSortBy] = useState<SortOption>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('fazer-todo-sort')
+      if (saved && ['incomplete-first', 'complete-first', 'newest', 'oldest', 'name-asc', 'name-desc'].includes(saved)) {
+        return saved as SortOption
+      }
+    }
+    return 'incomplete-first'
+  })
+  const [showEditHint, setShowEditHint] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('fazer-edit-hint-dismissed') !== 'true'
+    }
+    return true
+  })
   const inputRef = useRef<HTMLInputElement>(null)
   const nameInputRef = useRef<HTMLInputElement>(null)
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        delay: 200,
-        tolerance: 5,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  )
-
   const hasTodos = todos && todos.length > 0
 
-  // Use tempTodos during drag to avoid flicker
-  const activeTodos = tempTodos ?? todos
-
   const sortedTodos = useMemo(() => {
-    if (!activeTodos) return []
+    if (!todos) return []
 
-    const result = [...activeTodos]
-
-    result.sort((a, b) => {
+    return [...todos].sort((a, b) => {
       switch (sortBy) {
         case 'incomplete-first':
-          if (a.is_complete !== b.is_complete) {
-            return a.is_complete ? 1 : -1
-          }
+          if (a.is_complete !== b.is_complete) return a.is_complete ? 1 : -1
           return a.position - b.position
         case 'complete-first':
-          if (a.is_complete !== b.is_complete) {
-            return a.is_complete ? -1 : 1
-          }
+          if (a.is_complete !== b.is_complete) return a.is_complete ? -1 : 1
           return a.position - b.position
         case 'newest':
           return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -121,9 +93,16 @@ export function ListContent({ list }: Props) {
           return a.position - b.position
       }
     })
+  }, [todos, sortBy])
 
-    return result
-  }, [activeTodos, sortBy])
+  useEffect(() => {
+    localStorage.setItem('fazer-todo-sort', sortBy)
+  }, [sortBy])
+
+  function dismissEditHint() {
+    setShowEditHint(false)
+    localStorage.setItem('fazer-edit-hint-dismissed', 'true')
+  }
 
   useEffect(() => {
     if (isCreating && inputRef.current) {
@@ -149,7 +128,6 @@ export function ListContent({ list }: Props) {
     })
     setNewTodoTitle('')
 
-    // Scroll input into view after new todo is rendered
     setTimeout(() => {
       inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }, 50)
@@ -188,42 +166,6 @@ export function ListContent({ list }: Props) {
   async function handleDeleteList() {
     await deleteList.mutateAsync(list.id)
     router.push('/')
-  }
-
-  function handleDragStart(event: DragStartEvent) {
-    setActiveId(event.active.id as string)
-    // Trigger haptic feedback on supported devices (Android)
-    if (navigator.vibrate) {
-      navigator.vibrate(50)
-    }
-  }
-
-  async function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event
-    setActiveId(null)
-
-    if (over && active.id !== over.id && todos) {
-      const oldIndex = todos.findIndex((todo) => todo.id === active.id)
-      const newIndex = todos.findIndex((todo) => todo.id === over.id)
-
-      if (oldIndex !== -1 && newIndex !== -1) {
-        const reordered = arrayMove(todos, oldIndex, newIndex).map((todo, index) => ({
-          ...todo,
-          position: index,
-        }))
-
-        // Set local state immediately to avoid flicker
-        setTempTodos(reordered)
-
-        const updates = reordered.map((todo) => ({
-          id: todo.id,
-          position: todo.position,
-        }))
-
-        await reorderTodos.mutateAsync(updates)
-        setTempTodos(null)
-      }
-    }
   }
 
   if (isLoading) {
@@ -286,50 +228,11 @@ export function ListContent({ list }: Props) {
                 {list.name}
               </h1>
             )}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuItem
-                  onClick={() => setShowDeleteDialog(true)}
-                  className="text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
-                >
-                  <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
-                  {t('lists.deleteList')}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-
-        {/* Empty state */}
-        {!hasTodos && !isCreating && (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-50">
-              {t('todos.empty')}
-            </h2>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-              {t('todos.emptyDescription')}
-            </p>
-            <Button className="mt-6" onClick={() => setIsCreating(true)}>
-              <Plus className="h-4 w-4" />
-              {t('todos.newTodo')}
-            </Button>
-          </div>
-        )}
-
-        {/* Todo list */}
-        {(hasTodos || isCreating) && (
-          <div className="space-y-4">
-            {/* Sort dropdown */}
-            {hasTodos && (
-              <div className="flex justify-end">
+            <div className="flex items-center gap-1">
+              {hasTodos && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="icon">
+                    <Button variant="ghost" size="icon">
                       <ArrowUpDown className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -372,37 +275,68 @@ export function ListContent({ list }: Props) {
                     </DropdownMenuCheckboxItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </div>
-            )}
+              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => setShowDeleteDialog(true)}
+                    className="text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
+                  >
+                    <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
+                    {t('lists.deleteList')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </div>
 
-            {/* Sortable todos */}
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
+        {/* Edit hint */}
+        {showEditHint && hasTodos && (
+          <div className="mb-4 flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+            <Lightbulb className="h-4 w-4 shrink-0" />
+            <span className="md:hidden">{t('todos.editHintTouch')}</span>
+            <span className="hidden md:inline">{t('todos.editHintDesktop')}</span>
+            <button
+              onClick={dismissEditHint}
+              className="shrink-0 rounded p-0.5 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+              aria-label={t('common.close')}
             >
-              <SortableContext
-                items={sortedTodos.map((todo) => todo.id)}
-                strategy={verticalListSortingStrategy}
-              >
-                <div className="space-y-2">
-                  {sortedTodos.map((todo) => (
-                    <SortableTodoItem key={todo.id} todo={todo} listId={list.id} />
-                  ))}
-                </div>
-              </SortableContext>
-              <DragOverlay dropAnimation={null}>
-                {activeId ? (
-                  <div className="rounded-lg opacity-90 shadow-lg outline outline-2 outline-zinc-400 dark:outline-zinc-500">
-                    <TodoItem
-                      todo={sortedTodos.find((t) => t.id === activeId)!}
-                      listId={list.id}
-                    />
-                  </div>
-                ) : null}
-              </DragOverlay>
-            </DndContext>
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
+        {/* Empty state */}
+        {!hasTodos && !isCreating && (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-50">
+              {t('todos.empty')}
+            </h2>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+              {t('todos.emptyDescription')}
+            </p>
+            <Button className="mt-6" onClick={() => setIsCreating(true)}>
+              <Plus className="h-4 w-4" />
+              {t('todos.newTodo')}
+            </Button>
+          </div>
+        )}
+
+        {/* Todo list */}
+        {(hasTodos || isCreating) && (
+          <div className="space-y-4">
+            {/* Todos */}
+            <div className="space-y-2">
+              {sortedTodos.map((todo) => (
+                <TodoItem key={todo.id} todo={todo} listId={list.id} />
+              ))}
+            </div>
 
             {/* Inline create input */}
             {isCreating && (
