@@ -1,18 +1,12 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
-import { Trash2, MoreHorizontal } from 'lucide-react'
+import { X } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { useToggleTodo, useDeleteTodo, useUpdateTodo } from '@/lib/hooks/use-todos'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -131,27 +125,17 @@ export function TodoItem({ todo, listId }: Props) {
           </span>
         )}
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="sm:opacity-0 sm:group-hover:opacity-100"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              onClick={() => setShowDeleteDialog(true)}
-              className="text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
-            >
-              <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
-              {t('common.delete')}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-zinc-400 hover:text-red-600 dark:text-zinc-500 dark:hover:text-red-400 sm:opacity-0 sm:group-hover:opacity-100"
+          onClick={(e) => {
+            e.stopPropagation()
+            setShowDeleteDialog(true)
+          }}
+        >
+          <X className="h-4 w-4" />
+        </Button>
       </div>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
