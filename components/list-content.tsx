@@ -225,7 +225,7 @@ export function ListContent({ list }: Props) {
                 onClick={() => setIsEditingName(true)}
                 className="cursor-pointer text-2xl font-semibold tracking-tight text-zinc-900 hover:text-zinc-600 dark:text-zinc-50 dark:hover:text-zinc-300"
               >
-                {list.name}
+                {listName}
               </h1>
             )}
             <div className="flex items-center gap-1">
