@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useCreateList } from '@/lib/hooks/use-lists'
 import {
@@ -19,6 +20,7 @@ type Props = {
 
 export function CreateListModal({ open, onClose }: Props) {
   const t = useTranslations()
+  const router = useRouter()
   const createList = useCreateList()
   const [name, setName] = useState('')
 
@@ -26,9 +28,10 @@ export function CreateListModal({ open, onClose }: Props) {
     e.preventDefault()
     if (!name.trim()) return
 
-    await createList.mutateAsync(name.trim())
+    const newList = await createList.mutateAsync(name.trim())
     setName('')
     onClose()
+    router.push(`/l/${newList.id}`)
   }
 
   function handleOpenChange(isOpen: boolean) {
