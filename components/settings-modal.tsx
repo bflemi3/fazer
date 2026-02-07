@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl'
 import { useTheme } from 'next-themes'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Monitor, Sun, Moon, Check, LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useLocale } from './locale-provider'
@@ -101,6 +102,14 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
             </Button>
           </div>
         </div>
+
+        <Link
+          href="/changelog"
+          onClick={onClose}
+          className="-mb-2 block text-center text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+        >
+          v{process.env.NEXT_PUBLIC_APP_VERSION}
+        </Link>
       </DialogContent>
     </Dialog>
   )
