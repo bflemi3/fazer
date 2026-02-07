@@ -114,8 +114,9 @@ public/        # Static assets
 ## Commands
 
 ```bash
-npm run dev       # Start dev server
-npm run build     # Production build
+npm run dev       # Start dev server (Turbopack, hot reload)
+npm run build     # Production build (webpack, for Serwist SW generation)
+npm run dev:pwa   # Build + start for local PWA/service worker testing
 npm run lint      # Run ESLint
 ```
 
@@ -141,6 +142,21 @@ npm run lint      # Run ESLint
 - User can override via Settings modal
 - Override stored in localStorage (`fazer-locale`) only if different from browser default
 - Translation files in `messages/` directory
+
+---
+
+## Versioning & releases
+
+- Use **semantic versioning** (`0.MINOR.PATCH` while pre-1.0).
+  - `0.MINOR.0` — new features (e.g., PWA support, offline sync)
+  - `0.x.PATCH` — bug fixes, small improvements
+- Create a **GitHub Release** for each feature PR merged to `main`.
+- Workflow after merging a feature PR:
+  1. Bump `version` in `package.json`
+  2. Commit the bump to `main`
+  3. Tag: `git tag vX.Y.Z`
+  4. Push tag: `git push origin vX.Y.Z`
+  5. Create release: `gh release create vX.Y.Z --title "vX.Y.Z — Short description" --generate-notes`
 
 ---
 
