@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { LocaleProvider } from "@/components/locale-provider";
 import { QueryProvider } from "@/components/query-provider";
+import { Toaster } from "@/components/ui/sonner";
+import { SwUpdateNotifier } from "@/components/sw-update-notifier";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -55,6 +57,8 @@ export default function RootLayout({
               {children}
             </LocaleProvider>
           </QueryProvider>
+          <Toaster />
+          <SwUpdateNotifier />
         </ThemeProvider>
       </body>
     </html>

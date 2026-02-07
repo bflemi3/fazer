@@ -48,6 +48,14 @@
 - Default to the user’s system color scheme.
 - UI should feel fast, unobtrusive, and predictable.
 
+### Theme colors
+
+- **Brand color:** Electric Violet `#8B5CF6` — used for PWA theme, manifest, icons
+- **Light mode:** shadcn/ui neutral palette (oklch-based CSS variables in `globals.css`)
+- **Dark mode:** shadcn/ui neutral dark palette
+- Colors are defined as CSS custom properties in `:root` and `.dark` selectors
+- Use semantic tokens (`--foreground`, `--muted-foreground`, `--border`, etc.) — never hardcode hex values in components
+
 ---
 
 ## PWA, responsiveness, and offline-first behavior
@@ -106,6 +114,7 @@ messages/      # Translation files (en.json, pt.json, etc.)
 i18n/          # next-intl request config
 supabase/      # Supabase config, migrations, and types
 pwa/           # PWA assets (manifest, icons, service worker config)
+types/         # Custom TypeScript declarations (e.g. serwist.d.ts)
 public/        # Static assets
 
 
@@ -130,6 +139,7 @@ npm run lint      # Run ESLint
 | `/login` | Sign-in page |
 | `/l/[id]` | View/edit a list (authenticated) |
 | `/s/[token]` | Public share link (read-only for anonymous) |
+| `/changelog` | Full changelog rendered from `CHANGELOG.md` |
 
 ---
 
@@ -157,6 +167,18 @@ npm run lint      # Run ESLint
   3. Tag: `git tag vX.Y.Z`
   4. Push tag: `git push origin vX.Y.Z`
   5. Create release: `gh release create vX.Y.Z --title "vX.Y.Z — Short description" --generate-notes`
+
+---
+
+## Changelog & update notifications
+
+- **`CHANGELOG.md`** lives at the project root and is the single source of truth for release notes.
+- Write changelog entries for **lay users**, not developers (e.g., "Install Fazer to your home screen" instead of "PWA support with Serwist").
+- Each version gets a `## vX.Y.Z` heading followed by bullet points.
+- At build time, `next.config.ts` parses `CHANGELOG.md` to extract notes for the current `package.json` version and exposes them as `NEXT_PUBLIC_APP_VERSION` and `NEXT_PUBLIC_RELEASE_NOTES`.
+- When the service worker activates an update, `SwUpdateNotifier` shows a toast with the current version's release notes and a "View past updates" link to `/changelog`.
+- The `/changelog` route is a static page that renders the full `CHANGELOG.md` with `react-markdown`.
+- When releasing a new version, update `CHANGELOG.md` **before** bumping the version in `package.json`.
 
 ---
 
