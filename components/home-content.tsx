@@ -7,6 +7,7 @@ import { Plus, Search, ArrowUpDown } from 'lucide-react'
 import { toast } from 'sonner'
 import { useProfile } from '@/lib/hooks/use-profile'
 import { useLists } from '@/lib/hooks/use-lists'
+import { useRealtimeInvalidation } from '@/lib/hooks/use-realtime-invalidation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -27,6 +28,13 @@ export function HomeContent() {
   const searchParams = useSearchParams()
   const { firstName, isLoading: profileLoading } = useProfile()
   const { data: lists, isLoading: listsLoading } = useLists()
+
+  // Live updates: invalidate cache when lists change
+  useRealtimeInvalidation({
+    channel: 'lists',
+    table: 'lists',
+    queryKeys: [['lists']],
+  })
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')

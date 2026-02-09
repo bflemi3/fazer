@@ -5,9 +5,10 @@ import { ArrowLeft, Plus, MoreHorizontal, Trash2, Share2, ArrowUpDown, X, Lightb
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useTodos, useCreateTodo } from '@/lib/hooks/use-todos'
-import { useRenameList, useDeleteList } from '@/lib/hooks/use-lists'
+import { useList, useRenameList, useDeleteList } from '@/lib/hooks/use-lists'
 import { useProfile } from '@/lib/hooks/use-profile'
 import { useCollaborators } from '@/lib/hooks/use-collaborators'
+import { useRealtimeInvalidation } from '@/lib/hooks/use-realtime-invalidation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -43,13 +44,29 @@ type Props = {
 export function ListContent({ list }: Props) {
   const router = useRouter()
   const t = useTranslations()
+  const { data: listData } = useList(list.id)
+  const currentList = listData ?? list
   const { data: todos, isLoading } = useTodos(list.id)
   const createTodo = useCreateTodo(list.id)
   const renameList = useRenameList()
   const deleteList = useDeleteList()
   const { profile } = useProfile()
   const { data: members } = useCollaborators(list.id)
-  const isOwner = profile?.id === list.owner_id
+  const isOwner = profile?.id === currentList.owner_id
+
+  // Live updates: invalidate cache when other users change todos or list metadata
+  useRealtimeInvalidation({
+    channel: `todos:${list.id}`,
+    table: 'todos',
+    filter: `list_id=eq.${list.id}`,
+    queryKeys: [['todos', list.id]],
+  })
+  useRealtimeInvalidation({
+    channel: `list:${list.id}`,
+    table: 'lists',
+    filter: `id=eq.${list.id}`,
+    queryKeys: [['lists', list.id], ['collaborators', list.id]],
+  })
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
@@ -102,6 +119,13 @@ export function ListContent({ list }: Props) {
       }
     })
   }, [todos, sortBy])
+
+  // Sync local list name when query data updates (e.g. from realtime)
+  useEffect(() => {
+    if (!isEditingName) {
+      setListName(currentList.name)
+    }
+  }, [currentList.name, isEditingName])
 
   useEffect(() => {
     localStorage.setItem('fazer-todo-sort', sortBy)

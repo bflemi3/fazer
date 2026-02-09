@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { useTodos } from '@/lib/hooks/use-todos'
+import { useList } from '@/lib/hooks/use-lists'
+import { useRealtimeInvalidation } from '@/lib/hooks/use-realtime-invalidation'
 import { Button } from '@/components/ui/button'
 import { UserAvatar } from './user-avatar'
 import type { Tables } from '@/supabase/database.types'
@@ -16,7 +18,23 @@ type Props = {
 
 export function SharedListContent({ list, ownerProfile, shareToken }: Props) {
   const t = useTranslations()
+  const { data: listData } = useList(list.id)
+  const currentList = listData ?? list
   const { data: todos, isLoading } = useTodos(list.id)
+
+  // Live updates: invalidate cache when todos or list metadata change
+  useRealtimeInvalidation({
+    channel: `todos:${list.id}`,
+    table: 'todos',
+    filter: `list_id=eq.${list.id}`,
+    queryKeys: [['todos', list.id]],
+  })
+  useRealtimeInvalidation({
+    channel: `list:${list.id}`,
+    table: 'lists',
+    filter: `id=eq.${list.id}`,
+    queryKeys: [['lists', list.id]],
+  })
 
   if (isLoading) {
     return (
@@ -44,7 +62,7 @@ export function SharedListContent({ list, ownerProfile, shareToken }: Props) {
             </span>
           </div>
           <h1 className="mt-3 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-            {list.name}
+            {currentList.name}
           </h1>
 
           {/* Sign in CTA */}
