@@ -6,6 +6,8 @@ import { useTranslations } from 'next-intl'
 import { formatDistanceToNow } from 'date-fns'
 import { MoreHorizontal, Trash2, Share2, Pencil } from 'lucide-react'
 import { useDeleteList, useRenameList } from '@/lib/hooks/use-lists'
+import { useProfile } from '@/lib/hooks/use-profile'
+import { useProfileById } from '@/lib/hooks/use-profile'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -30,6 +32,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { UserAvatar } from './user-avatar'
+import { ShareModal } from './share-modal'
 import type { List } from '@/lib/hooks/use-lists'
 
 type Props = {
@@ -41,8 +45,12 @@ export function ListItem({ list }: Props) {
   const router = useRouter()
   const deleteList = useDeleteList()
   const renameList = useRenameList()
+  const { profile } = useProfile()
+  const { data: ownerProfile } = useProfileById(list.owner_id)
+  const isOwner = profile?.id === list.owner_id
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showRenameDialog, setShowRenameDialog] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
   const [newName, setNewName] = useState(list.name)
 
   async function handleDelete() {
@@ -70,7 +78,7 @@ export function ListItem({ list }: Props) {
           <span className="font-medium text-zinc-900 dark:text-zinc-50">
             {list.name}
           </span>
-          <span className="block text-xs text-zinc-500 dark:text-zinc-400">
+          <span className="mt-0.5 block text-xs text-zinc-500 dark:text-zinc-400">
             {t('lists.created', { time: formatDistanceToNow(new Date(list.created_at), { addSuffix: true }) })}
           </span>
         </button>
@@ -90,17 +98,19 @@ export function ListItem({ list }: Props) {
               <Pencil className="h-4 w-4" />
               {t('common.rename')}
             </DropdownMenuItem>
-            <DropdownMenuItem disabled>
+            <DropdownMenuItem onClick={() => setShowShareModal(true)}>
               <Share2 className="h-4 w-4" />
               {t('common.share')}
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => setShowDeleteDialog(true)}
-              className="text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
-            >
-              <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
-              {t('common.delete')}
-            </DropdownMenuItem>
+            {isOwner && (
+              <DropdownMenuItem
+                onClick={() => setShowDeleteDialog(true)}
+                className="text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
+              >
+                <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
+                {t('common.delete')}
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -148,6 +158,15 @@ export function ListItem({ list }: Props) {
           </form>
         </DialogContent>
       </Dialog>
+
+      {profile && (
+        <ShareModal
+          open={showShareModal}
+          onClose={() => setShowShareModal(false)}
+          list={list}
+          currentUserId={profile.id}
+        />
+      )}
     </>
   )
 }

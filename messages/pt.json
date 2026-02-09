@@ -64,5 +64,20 @@
       "name-asc": "Nome A-Z",
       "name-desc": "Nome Z-A"
     }
+  },
+  "share": {
+    "title": "Compartilhar lista",
+    "copyLink": "Copiar link",
+    "linkCopied": "Link copiado",
+    "peopleWithAccess": "Pessoas com acesso",
+    "owner": "Proprietário",
+    "remove": "Remover",
+    "signInToEdit": "Faça login para colaborar nesta lista",
+    "signIn": "Entrar",
+    "notFound": "Lista não encontrada",
+    "notFoundDescription": "Esta lista pode ter sido excluída ou o link não é mais válido. Crie uma conta e comece a fazer suas próprias listas.",
+    "sharedBy": "Compartilhada por {name}",
+    "noAccess": "Esta lista não está disponível — ela pode não existir ou ter sido excluída",
+    "you": "você"
   }
 }
