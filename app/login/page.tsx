@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
@@ -10,14 +11,17 @@ import { SettingsButton } from '@/components/settings-button'
 export default function LoginPage() {
   const t = useTranslations('auth')
   const supabase = createClient()
+  const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
+
+  const next = searchParams.get('next') || '/'
 
   async function signInWithGoogle() {
     setIsLoading(true)
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
       },
     })
   }

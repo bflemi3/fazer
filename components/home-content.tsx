@@ -1,10 +1,13 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Plus, Search, ArrowUpDown } from 'lucide-react'
+import { toast } from 'sonner'
 import { useProfile } from '@/lib/hooks/use-profile'
 import { useLists } from '@/lib/hooks/use-lists'
+import { useRealtimeInvalidation } from '@/lib/hooks/use-realtime-invalidation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -21,12 +24,28 @@ type SortOption = 'newest' | 'oldest' | 'name-asc' | 'name-desc'
 
 export function HomeContent() {
   const t = useTranslations()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const { firstName, isLoading: profileLoading } = useProfile()
   const { data: lists, isLoading: listsLoading } = useLists()
+
+  // Live updates: invalidate cache when lists change
+  useRealtimeInvalidation({
+    channel: 'lists',
+    table: 'lists',
+    queryKeys: [['lists']],
+  })
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<SortOption>('newest')
+
+  useEffect(() => {
+    if (searchParams.get('toast') === 'no-access') {
+      toast(t('share.noAccess'))
+      router.replace('/', { scroll: false })
+    }
+  }, [searchParams, router, t])
 
   const isLoading = profileLoading || listsLoading
 

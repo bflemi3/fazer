@@ -15,7 +15,7 @@ export default async function ListPage({ params }: Props) {
     redirect('/login')
   }
 
-  // Verify the user has access to this list
+  // Verify the user has access to this list (RLS enforces owner/collaborator)
   const { data: list } = await supabase
     .from('lists')
     .select('*')
@@ -23,7 +23,7 @@ export default async function ListPage({ params }: Props) {
     .single()
 
   if (!list) {
-    redirect('/')
+    redirect('/?toast=no-access')
   }
 
   return <ListContent list={list} />

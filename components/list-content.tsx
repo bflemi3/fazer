@@ -1,11 +1,14 @@
 'use client'
 
 import { useState, useRef, useEffect, useMemo } from 'react'
-import { ArrowLeft, Plus, MoreHorizontal, Trash2, ArrowUpDown, X, Lightbulb } from 'lucide-react'
+import { ArrowLeft, Plus, MoreHorizontal, Trash2, Share2, ArrowUpDown, X, Lightbulb } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useTodos, useCreateTodo } from '@/lib/hooks/use-todos'
-import { useRenameList, useDeleteList } from '@/lib/hooks/use-lists'
+import { useList, useRenameList, useDeleteList } from '@/lib/hooks/use-lists'
+import { useProfile } from '@/lib/hooks/use-profile'
+import { useCollaborators } from '@/lib/hooks/use-collaborators'
+import { useRealtimeInvalidation } from '@/lib/hooks/use-realtime-invalidation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -28,6 +31,8 @@ import {
 import { SettingsButton } from './settings-button'
 import { CreateListModal } from './create-list-modal'
 import { TodoItem } from './todo-item'
+import { AvatarStack } from './avatar-stack'
+import { ShareModal } from './share-modal'
 import type { Tables } from '@/supabase/database.types'
 
 type SortOption = 'incomplete-first' | 'complete-first' | 'newest' | 'oldest' | 'name-asc' | 'name-desc'
@@ -39,10 +44,29 @@ type Props = {
 export function ListContent({ list }: Props) {
   const router = useRouter()
   const t = useTranslations()
+  const { data: listData } = useList(list.id)
+  const currentList = listData ?? list
   const { data: todos, isLoading } = useTodos(list.id)
   const createTodo = useCreateTodo(list.id)
   const renameList = useRenameList()
   const deleteList = useDeleteList()
+  const { profile } = useProfile()
+  const { data: members } = useCollaborators(list.id)
+  const isOwner = profile?.id === currentList.owner_id
+
+  // Live updates: invalidate cache when other users change todos or list metadata
+  useRealtimeInvalidation({
+    channel: `todos:${list.id}`,
+    table: 'todos',
+    filter: `list_id=eq.${list.id}`,
+    queryKeys: [['todos', list.id]],
+  })
+  useRealtimeInvalidation({
+    channel: `list:${list.id}`,
+    table: 'lists',
+    filter: `id=eq.${list.id}`,
+    queryKeys: [['lists', list.id], ['collaborators', list.id]],
+  })
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
@@ -50,6 +74,7 @@ export function ListContent({ list }: Props) {
   const [isEditingName, setIsEditingName] = useState(false)
   const [listName, setListName] = useState(list.name)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
   const [sortBy, setSortBy] = useState<SortOption>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('fazer-todo-sort')
@@ -94,6 +119,13 @@ export function ListContent({ list }: Props) {
       }
     })
   }, [todos, sortBy])
+
+  // Sync local list name when query data updates (e.g. from realtime)
+  useEffect(() => {
+    if (!isEditingName) {
+      setListName(currentList.name)
+    }
+  }, [currentList.name, isEditingName])
 
   useEffect(() => {
     localStorage.setItem('fazer-todo-sort', sortBy)
@@ -210,7 +242,7 @@ export function ListContent({ list }: Props) {
               {t('lists.title')}
             </Button>
           </div>
-          <div className="mt-4 flex items-start justify-between gap-2">
+          <div className="mt-4 flex items-start justify-between gap-4">
             {isEditingName ? (
               <Input
                 ref={nameInputRef}
@@ -223,12 +255,29 @@ export function ListContent({ list }: Props) {
             ) : (
               <h1
                 onClick={() => setIsEditingName(true)}
-                className="cursor-pointer text-2xl font-semibold tracking-tight text-zinc-900 hover:text-zinc-600 dark:text-zinc-50 dark:hover:text-zinc-300"
+                className="min-w-0 cursor-pointer text-2xl font-semibold tracking-tight text-zinc-900 hover:text-zinc-600 dark:text-zinc-50 dark:hover:text-zinc-300"
               >
                 {listName}
               </h1>
             )}
-            <div className="flex items-center gap-1">
+            <div className="flex shrink-0 items-center gap-1">
+              <Button
+                variant="outline"
+                size="sm"
+                className="hidden sm:inline-flex"
+                onClick={() => setShowShareModal(true)}
+              >
+                <Share2 className="h-4 w-4" />
+                {t('common.share')}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="sm:hidden"
+                onClick={() => setShowShareModal(true)}
+              >
+                <Share2 className="h-4 w-4" />
+              </Button>
               {hasTodos && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -283,17 +332,33 @@ export function ListContent({ list }: Props) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={() => setShowDeleteDialog(true)}
-                    className="text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
-                  >
-                    <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
-                    {t('lists.deleteList')}
+                  <DropdownMenuItem onClick={() => setShowShareModal(true)}>
+                    <Share2 className="h-4 w-4" />
+                    {t('common.share')}
                   </DropdownMenuItem>
+                  {isOwner && (
+                    <DropdownMenuItem
+                      onClick={() => setShowDeleteDialog(true)}
+                      className="text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
+                    >
+                      <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
+                      {t('lists.deleteList')}
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           </div>
+
+          {/* Avatar stack */}
+          {members && members.length > 0 && (
+            <div className="mt-3">
+              <AvatarStack
+                members={members}
+                onClick={() => setShowShareModal(true)}
+              />
+            </div>
+          )}
         </div>
 
         {/* Edit hint */}
@@ -389,6 +454,15 @@ export function ListContent({ list }: Props) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {profile && (
+        <ShareModal
+          open={showShareModal}
+          onClose={() => setShowShareModal(false)}
+          list={list}
+          currentUserId={profile.id}
+        />
+      )}
     </div>
   )
 }

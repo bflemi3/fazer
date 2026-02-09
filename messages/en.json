@@ -64,5 +64,20 @@
       "name-asc": "Name A-Z",
       "name-desc": "Name Z-A"
     }
+  },
+  "share": {
+    "title": "Share list",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied",
+    "peopleWithAccess": "People with access",
+    "owner": "Owner",
+    "remove": "Remove",
+    "signInToEdit": "Sign in to collaborate on this list",
+    "signIn": "Sign in",
+    "notFound": "List not found",
+    "notFoundDescription": "This list may have been deleted or the link is no longer valid. Create an account and start making your own lists.",
+    "sharedBy": "Shared by {name}",
+    "noAccess": "That list isn't available — it may not exist or has been deleted",
+    "you": "you"
   }
 }
