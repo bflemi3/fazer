@@ -40,3 +40,26 @@ npm run lint      # Run ESLint
 - Light and dark mode (follows system preference)
 - English and Portuguese language support
 - In-app update notifications with release notes
+
+## Releasing
+
+We use [semantic versioning](https://semver.org/) (`0.MINOR.PATCH` while pre-1.0).
+
+After merging a feature PR to `main`:
+
+1. Update `CHANGELOG.md` with user-friendly release notes
+2. Bump `version` in `package.json` (`minor` for features, `patch` for fixes)
+3. Commit to `main`:
+   ```bash
+   git add CHANGELOG.md package.json package-lock.json
+   git commit -m "Bump version to vX.Y.Z"
+   ```
+4. Tag and push:
+   ```bash
+   git tag vX.Y.Z
+   git push origin main && git push origin vX.Y.Z
+   ```
+5. Create a GitHub Release:
+   ```bash
+   gh release create vX.Y.Z --title "vX.Y.Z — Short description" --generate-notes
+   ```

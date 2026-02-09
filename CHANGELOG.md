@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.4.0
+
+- Share your lists with anyone using a simple link.
+- Shared lists update in real time — everyone sees changes as they happen.
+- See who's collaborating with avatar icons on each list.
+- List owners can manage who has access from the share menu.
+
 ## v0.3.0
 
 - You'll now see what's new when the app updates.
