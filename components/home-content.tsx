@@ -19,6 +19,7 @@ import {
 import { SettingsButton } from './settings-button'
 import { CreateListModal } from './create-list-modal'
 import { ListItem } from './list-item'
+import { Hint } from './hint'
 
 type SortOption = 'newest' | 'oldest' | 'name-asc' | 'name-desc'
 
@@ -194,6 +195,10 @@ export function HomeContent() {
                 </DropdownMenu>
               </div>
             </div>
+
+            <Hint storageKey="fazer-edit-hint-dismissed">
+              {t('todos.editHint')}
+            </Hint>
 
             {/* List items */}
             {filteredAndSortedLists.length > 0 ? (
