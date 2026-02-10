@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.6.0
+
+- Fazer now suggests installing the app to your home screen for a faster, app-like experience.
+- On iPhone, you'll see step-by-step instructions for adding to your home screen.
+- The prompt is easy to dismiss and won't bother you again.
+
 ## v0.5.0
 
 - Buttons, checkboxes, and focus rings now use the Fazer violet accent color.
