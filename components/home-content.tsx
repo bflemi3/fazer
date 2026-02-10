@@ -20,6 +20,7 @@ import { SettingsButton } from './settings-button'
 import { CreateListModal } from './create-list-modal'
 import { ListItem } from './list-item'
 import { Hint } from './hint'
+import { InstallPrompt } from './install-prompt'
 
 type SortOption = 'newest' | 'oldest' | 'name-asc' | 'name-desc'
 
@@ -195,6 +196,8 @@ export function HomeContent() {
                 </DropdownMenu>
               </div>
             </div>
+
+            <InstallPrompt />
 
             <Hint storageKey="fazer-edit-hint-dismissed">
               {t('todos.editHint')}

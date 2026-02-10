@@ -83,5 +83,11 @@
     "sharedBy": "Shared by {name}",
     "noAccess": "That list isn't available — it may not exist or has been deleted",
     "you": "you"
+  },
+  "install": {
+    "description": "Add Fazer to your home screen for a faster, app-like experience.",
+    "iosDescription": "Tap the share button, then \"Add to Home Screen\"",
+    "install": "Install",
+    "dismiss": "Dismiss"
   }
 }
