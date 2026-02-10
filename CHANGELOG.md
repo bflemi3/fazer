@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.5.0
+
+- Buttons, checkboxes, and focus rings now use the Fazer violet accent color.
+- List items and todos feel more interactive — tap feedback with subtle press animation.
+- Long press any item to rename it inline.
+- Adding new items feels faster — the input clears instantly.
+- Helpful tips now appear on the home page to guide you.
+- Language names in Settings are now translated to match your selected language.
+- Tighter, cleaner spacing on list and todo items.
+- Refreshed login page with larger text and better positioning.
+
 ## v0.4.0
 
 - Share your lists with anyone using a simple link.
