@@ -83,5 +83,11 @@
     "sharedBy": "Compartilhada por {name}",
     "noAccess": "Esta lista não está disponível — ela pode não existir ou ter sido excluída",
     "you": "você"
+  },
+  "install": {
+    "description": "Adicione o Fazer à sua tela inicial para uma experiência mais rápida.",
+    "iosDescription": "Toque no botão de compartilhar e depois em \"Adicionar à Tela de Início\"",
+    "install": "Instalar",
+    "dismiss": "Dispensar"
   }
 }
