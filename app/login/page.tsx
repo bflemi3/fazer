@@ -27,17 +27,17 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 pb-[20vh] dark:bg-zinc-950">
       <div className="fixed right-4 top-4 z-50">
         <SettingsButton />
       </div>
       <div className="w-full max-w-sm px-6">
         <div className="flex flex-col items-center gap-8">
           <div className="text-center">
-            <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+            <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
               {t('welcome')}
             </h1>
-            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="mt-2 text-base text-zinc-600 dark:text-zinc-400">
               {t('signInDescription')}
             </p>
           </div>

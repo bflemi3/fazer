@@ -1,14 +1,16 @@
 'use client'
 
-import { useState, useRef, useEffect, useMemo } from 'react'
-import { ArrowLeft, Plus, MoreHorizontal, Trash2, Share2, ArrowUpDown, X, Lightbulb } from 'lucide-react'
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
+import { ArrowLeft, Plus, MoreHorizontal, Trash2, Share2, ArrowUpDown, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
+import { toast } from 'sonner'
 import { useTodos, useCreateTodo } from '@/lib/hooks/use-todos'
 import { useList, useRenameList, useDeleteList } from '@/lib/hooks/use-lists'
 import { useProfile } from '@/lib/hooks/use-profile'
 import { useCollaborators } from '@/lib/hooks/use-collaborators'
 import { useRealtimeInvalidation } from '@/lib/hooks/use-realtime-invalidation'
+import { useLongPress } from '@/lib/hooks/use-long-press'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -84,14 +86,11 @@ export function ListContent({ list }: Props) {
     }
     return 'incomplete-first'
   })
-  const [showEditHint, setShowEditHint] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('fazer-edit-hint-dismissed') !== 'true'
-    }
-    return true
-  })
   const inputRef = useRef<HTMLInputElement>(null)
   const nameInputRef = useRef<HTMLInputElement>(null)
+  const nameLongPress = useLongPress(
+    useCallback(() => setIsEditingName(true), []),
+  )
 
   const hasTodos = todos && todos.length > 0
 
@@ -131,11 +130,6 @@ export function ListContent({ list }: Props) {
     localStorage.setItem('fazer-todo-sort', sortBy)
   }, [sortBy])
 
-  function dismissEditHint() {
-    setShowEditHint(false)
-    localStorage.setItem('fazer-edit-hint-dismissed', 'true')
-  }
-
   useEffect(() => {
     if (isCreating && inputRef.current) {
       inputRef.current.focus()
@@ -149,15 +143,20 @@ export function ListContent({ list }: Props) {
     }
   }, [isEditingName])
 
-  async function handleCreateTodo() {
-    if (!newTodoTitle.trim()) return
+  function handleCreateTodo() {
+    const title = newTodoTitle.trim()
+    if (!title) return
 
     const nextPosition = todos ? todos.length : 0
-    await createTodo.mutateAsync({
-      listId: list.id,
-      title: newTodoTitle.trim(),
-      position: nextPosition,
-    })
+    createTodo.mutate(
+      { listId: list.id, title, position: nextPosition },
+      {
+        onError: () => {
+          toast(t('todos.createError'))
+          setNewTodoTitle(title)
+        },
+      }
+    )
     setNewTodoTitle('')
 
     setTimeout(() => {
@@ -254,7 +253,7 @@ export function ListContent({ list }: Props) {
               />
             ) : (
               <h1
-                onClick={() => setIsEditingName(true)}
+                {...nameLongPress.handlers}
                 className="min-w-0 cursor-pointer text-2xl font-semibold tracking-tight text-zinc-900 hover:text-zinc-600 dark:text-zinc-50 dark:hover:text-zinc-300"
               >
                 {listName}
@@ -360,22 +359,6 @@ export function ListContent({ list }: Props) {
             </div>
           )}
         </div>
-
-        {/* Edit hint */}
-        {showEditHint && hasTodos && (
-          <div className="mb-4 flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
-            <Lightbulb className="h-4 w-4 shrink-0" />
-            <span className="md:hidden">{t('todos.editHintTouch')}</span>
-            <span className="hidden md:inline">{t('todos.editHintDesktop')}</span>
-            <button
-              onClick={dismissEditHint}
-              className="shrink-0 rounded p-0.5 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-              aria-label={t('common.close')}
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        )}
 
         {/* Empty state */}
         {!hasTodos && !isCreating && (

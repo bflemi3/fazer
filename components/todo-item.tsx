@@ -1,11 +1,13 @@
 'use client'
 
 import { X } from 'lucide-react'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useToggleTodo, useDeleteTodo, useUpdateTodo } from '@/lib/hooks/use-todos'
+import { useLongPress } from '@/lib/hooks/use-long-press'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
+import { ListCard } from '@/components/ui/list-card'
 import type { Todo } from '@/lib/hooks/use-todos'
 
 type Props = {
@@ -20,7 +22,10 @@ export function TodoItem({ todo, listId }: Props) {
   const [isEditing, setIsEditing] = useState(false)
   const [editTitle, setEditTitle] = useState(todo.title)
   const inputRef = useRef<HTMLInputElement>(null)
-  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  const longPress = useLongPress(
+    useCallback(() => setIsEditing(true), []),
+  )
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -37,20 +42,8 @@ export function TodoItem({ todo, listId }: Props) {
   }, [todo.title, isEditing])
 
   function handleClick() {
-    if (isEditing) return
-
-    if (clickTimeoutRef.current) {
-      // Second click within timeout = double click
-      clearTimeout(clickTimeoutRef.current)
-      clickTimeoutRef.current = null
-      setIsEditing(true)
-    } else {
-      // First click - wait to see if it's a double click
-      clickTimeoutRef.current = setTimeout(() => {
-        clickTimeoutRef.current = null
-        toggleTodo.mutateAsync({ id: todo.id, isComplete: !todo.is_complete })
-      }, 250)
-    }
+    if (isEditing || longPress.shouldSuppress()) return
+    toggleTodo.mutateAsync({ id: todo.id, isComplete: !todo.is_complete })
   }
 
   async function handleSave() {
@@ -75,9 +68,10 @@ export function TodoItem({ todo, listId }: Props) {
   }
 
   return (
-    <div
+    <ListCard
       onClick={handleClick}
-      className="group flex cursor-pointer items-center gap-3 rounded-lg border border-zinc-200 bg-white p-4 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+      {...longPress.handlers}
+      className="group flex cursor-pointer items-center gap-3"
     >
       <Checkbox
         checked={todo.is_complete}
@@ -117,6 +111,6 @@ export function TodoItem({ todo, listId }: Props) {
       >
         <X className="h-4 w-4" />
       </Button>
-    </div>
+    </ListCard>
   )
 }

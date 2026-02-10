@@ -6,6 +6,7 @@ import { useTodos } from '@/lib/hooks/use-todos'
 import { useList } from '@/lib/hooks/use-lists'
 import { useRealtimeInvalidation } from '@/lib/hooks/use-realtime-invalidation'
 import { Button } from '@/components/ui/button'
+import { ListCard } from '@/components/ui/list-card'
 import { UserAvatar } from './user-avatar'
 import type { Tables } from '@/supabase/database.types'
 import type { Profile } from '@/lib/hooks/use-profile'
@@ -82,10 +83,7 @@ export function SharedListContent({ list, ownerProfile, shareToken }: Props) {
         {todos && todos.length > 0 ? (
           <div className="space-y-2">
             {todos.map((todo) => (
-              <div
-                key={todo.id}
-                className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
-              >
+              <ListCard key={todo.id}>
                 <span
                   className={
                     todo.is_complete
@@ -95,7 +93,7 @@ export function SharedListContent({ list, ownerProfile, shareToken }: Props) {
                 >
                   {todo.title}
                 </span>
-              </div>
+              </ListCard>
             ))}
           </div>
         ) : (

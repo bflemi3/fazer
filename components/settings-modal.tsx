@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { Monitor, Sun, Moon, Check, LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useLocale } from './locale-provider'
-import { locales, localeNames, type Locale } from '@/lib/i18n/config'
+import { locales } from '@/lib/i18n/config'
 import {
   Dialog,
   DialogContent,
@@ -62,7 +62,7 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
                   className="flex-1"
                   onClick={() => setLocale(loc)}
                 >
-                  {localeNames[loc as Locale]}
+                  {t(`settings.locale.${loc}`)}
                   {locale === loc && <Check className="h-4 w-4" />}
                 </Button>
               ))}
