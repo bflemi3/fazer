@@ -206,6 +206,10 @@ export type Database = {
         Args: { p_list_id: string; p_user_id: string }
         Returns: boolean
       }
+      join_list_via_share_token: {
+        Args: { p_share_token: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

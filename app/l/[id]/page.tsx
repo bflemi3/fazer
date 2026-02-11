@@ -12,7 +12,7 @@ export default async function ListPage({ params }: Props) {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect('/login')
+    redirect(`/login?next=/l/${id}`)
   }
 
   // Verify the user has access to this list (RLS enforces owner/collaborator)
