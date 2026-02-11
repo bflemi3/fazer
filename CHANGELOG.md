@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.6.2
+
+- Text on lists and todos is now larger and easier to read on mobile.
+- Editing an item no longer causes the row to shift.
+- The install prompt is shorter and clearer: "Add the Fazer app to your home screen."
+
 ## v0.6.1
 
 - Shared lists now work correctly after signing in — no more "List not found" errors.
