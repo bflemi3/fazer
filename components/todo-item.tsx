@@ -86,11 +86,11 @@ export function TodoItem({ todo, listId }: Props) {
           onBlur={handleSave}
           onKeyDown={handleKeyDown}
           onClick={(e) => e.stopPropagation()}
-          className="h-auto flex-1 py-0 text-base"
+          className="h-auto flex-1 border-0 bg-transparent px-0 py-0 text-lg shadow-none"
         />
       ) : (
         <span
-          className={`flex-1 ${
+          className={`flex-1 text-lg ${
             todo.is_complete
               ? 'text-zinc-400 line-through dark:text-zinc-500'
               : 'text-zinc-900 dark:text-zinc-50'

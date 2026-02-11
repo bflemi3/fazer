@@ -85,7 +85,7 @@
     "you": "you"
   },
   "install": {
-    "description": "Add Fazer to your home screen for a faster, app-like experience.",
+    "description": "Add the Fazer app to your home screen.",
     "iosDescription": "Tap the share button, then \"Add to Home Screen\"",
     "install": "Install",
     "dismiss": "Dismiss"

@@ -109,14 +109,14 @@ export function ListItem({ list }: Props) {
             onBlur={handleSave}
             onKeyDown={handleKeyDown}
             onClick={(e) => e.stopPropagation()}
-            className="h-auto flex-1 py-0 text-base font-medium"
+            className="h-auto flex-1 border-0 bg-transparent px-0 py-0 text-lg font-medium shadow-none"
           />
         ) : (
           <div className="flex-1 text-left">
-            <span className="font-medium text-zinc-900 dark:text-zinc-50">
+            <span className="text-lg font-medium text-zinc-900 dark:text-zinc-50">
               {list.name}
             </span>
-            <span className="mt-0.5 block text-xs text-zinc-500 dark:text-zinc-400">
+            <span className="block text-sm text-zinc-500 dark:text-zinc-400">
               {t('lists.created', { time: formatDistanceToNow(new Date(list.created_at), { addSuffix: true }) })}
             </span>
           </div>
