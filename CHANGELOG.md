@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.6.1
+
+- Shared lists now work correctly after signing in — no more "List not found" errors.
+- Signing in from a share link automatically adds you as a collaborator with edit access.
+- Your session now stays active across tabs — no more unexpected sign-outs.
+- If your session expires while viewing a list, you'll be taken back to it after signing in again.
+
 ## v0.6.0
 
 - Fazer now suggests installing the app to your home screen for a faster, app-like experience.
