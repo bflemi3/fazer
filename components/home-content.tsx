@@ -147,7 +147,7 @@ export function HomeContent() {
           <>
             {/* Controls */}
             <div className="mb-4 flex items-center justify-between gap-2">
-              <Button variant="outline" onClick={() => setIsCreateModalOpen(true)}>
+              <Button variant="outline" className="text-base" onClick={() => setIsCreateModalOpen(true)}>
                 <Plus className="h-4 w-4" />
                 {t('lists.newList')}
               </Button>

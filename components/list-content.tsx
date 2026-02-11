@@ -407,7 +407,7 @@ export function ListContent({ list }: Props) {
             {!isCreating && (
               <Button
                 variant="ghost"
-                className="w-full justify-start text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+                className="w-full justify-start text-base text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
                 onClick={() => setIsCreating(true)}
               >
                 <Plus className="h-4 w-4" />
