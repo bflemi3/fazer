@@ -11,7 +11,23 @@ export default async function SharedListPage({ params }: Props) {
   const { token } = await params
   const supabase = await createClient()
 
-  // Fetch list by share_token
+  // Check auth first — determines which path to take
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (user) {
+    // Authenticated: join via RPC (bypasses RLS chicken-and-egg problem)
+    const { data: listId } = await supabase.rpc('join_list_via_share_token', {
+      p_share_token: token,
+    })
+
+    if (!listId) {
+      return <ShareNotFound />
+    }
+
+    redirect(`/l/${listId}`)
+  }
+
+  // Anonymous: fetch list by share_token (anon RLS policy allows SELECT)
   const { data: list } = await supabase
     .from('lists')
     .select('*')
@@ -22,21 +38,12 @@ export default async function SharedListPage({ params }: Props) {
     return <ShareNotFound />
   }
 
-  // Check if the user is authenticated
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (user) {
-    redirect(`/l/${list.id}`)
-  }
-
   // Fetch owner profile (anon can read profiles via RLS policy)
-  const { data: ownerData, error: profileError } = await supabase
+  const { data: ownerData } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', list.owner_id)
     .single()
-
-  console.log('[share] owner_id:', list.owner_id, 'profile:', ownerData, 'error:', profileError)
 
   const firstName = ownerData?.display_name?.split(' ')[0] || ''
   const displayName = firstName || ownerData?.email || ''
