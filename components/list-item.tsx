@@ -55,6 +55,10 @@ export function ListItem({ list }: Props) {
   )
 
   useEffect(() => {
+    router.prefetch(`/l/${list.id}`)
+  }, [router, list.id])
+
+  useEffect(() => {
     if (isEditing && inputRef.current) {
       inputRef.current.focus()
       inputRef.current.select()
