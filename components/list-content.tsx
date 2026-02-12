@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
+import Link from 'next/link'
 import { ArrowLeft, Plus, MoreHorizontal, Trash2, Share2, ArrowUpDown, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
@@ -235,10 +236,12 @@ export function ListContent({ list }: Props) {
               variant="ghost"
               size="sm"
               className="-ml-2"
-              onClick={() => router.push('/')}
+              asChild
             >
-              <ArrowLeft className="h-4 w-4" />
-              {t('lists.title')}
+              <Link href="/">
+                <ArrowLeft className="h-4 w-4" />
+                {t('lists.title')}
+              </Link>
             </Button>
           </div>
           <div className="mt-4 flex items-start justify-between gap-4">
