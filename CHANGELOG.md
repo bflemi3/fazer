@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.3
+
+- Navigating between pages now feels faster — pages are pre-loaded before you tap.
+
 ## v0.6.2
 
 - Text on lists and todos is now larger and easier to read on mobile.
