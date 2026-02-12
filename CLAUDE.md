@@ -182,6 +182,19 @@ npm run lint      # Run ESLint
 
 ---
 
+## Completed items management (planned)
+
+- Completed todos should be **hidden by default** to keep long lists clean.
+- Provide a way to reveal completed items (e.g., expandable "N completed" section).
+- Users should be able to:
+  - View completed items
+  - Uncomplete individual items (move them back to the active list)
+  - Uncomplete all completed items at once
+  - Delete all completed items at once
+- Details TBD — discuss UX approach when implementing.
+
+---
+
 ## Analytics (non-MVP)
 
 - Add basic, privacy-conscious product analytics after MVP.
