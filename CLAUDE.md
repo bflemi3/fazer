@@ -100,6 +100,60 @@
 - Keep custom components minimal and composable
 - Follow shadcn patterns (variants, slots, cn() for className merging)
 
+### Frontend component patterns
+
+These patterns are **mandatory** for all new and refactored components.
+
+#### Primitives-only props
+Components receive **primitive values** (strings, booleans, numbers) and **callbacks** — never objects or arrays. This makes `memo` effective and keeps components decoupled from parent data shapes.
+
+```tsx
+// Good
+<ListTitle listId={listId} />
+
+// Bad — passing an object defeats memo and couples child to parent's data shape
+<ListTitle list={list} />
+```
+
+#### Components own their data
+Each component fetches exactly the data it needs using `useSuspenseQuery` (via hooks like `useSuspenseList`) with a **selector**. Data is co-located with its only consumer. Parents do not fetch data and pass it down.
+
+```tsx
+const selectName = (list: { name: string }) => list.name
+
+const ListTitle = memo(function ListTitle({ listId }: { listId: string }) {
+  const { data: name } = useSuspenseList(listId, { select: selectName })
+  // ...
+})
+```
+
+#### Selectors for render isolation
+Use the `select` option on query hooks to narrow the subscribed data slice. React Query's structural sharing means the component only re-renders when its selected value actually changes — not when unrelated fields on the same query update.
+
+- Define selectors as **stable module-level functions** (outside the component) so they don't break memoization.
+- Prefer `useSuspenseQuery` / `useSuspenseList` over `useQuery` / `useList` — suspense guarantees `data` is never `undefined`, producing cleaner component code.
+
+#### Thin orchestrator parents
+Parent "orchestrator" components own **layout** and **shared state** that multiple children need (e.g., a modal open flag triggered by different children). They should have minimal or no data hooks — only what's needed for coordination. Push all other data and state into children.
+
+#### Suspense boundaries with skeleton fallbacks
+Every component that uses `useSuspenseQuery` must have a `<Suspense>` boundary above it. The fallback must be a **skeleton that matches the real content's dimensions** to prevent layout shift. Use the shadcn `Skeleton` component (`@/components/ui/skeleton`).
+
+```tsx
+<Suspense fallback={<ListHeaderSkeleton />}>
+  <ListHeader listId={listId} />
+</Suspense>
+```
+
+#### Memo + stable props
+- Wrap all components that receive props in `memo`.
+- All callback props must use `useCallback`.
+- All data props must be primitives.
+- This ensures re-renders stay local — a state change in one component never cascades to siblings or children.
+
+#### Derived state from existing data
+When a component needs a computed value (e.g., `isOwner`), derive it from data the component already fetches rather than accepting extra props from a parent.
+
 ---
 
 ## Project structure

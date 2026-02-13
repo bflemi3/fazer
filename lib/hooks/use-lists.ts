@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient, queryOptions } from '@tanstack/react-query'
+import { useQuery, useSuspenseQuery, useMutation, useQueryClient, queryOptions } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import type { Tables } from '@/supabase/database.types'
 
@@ -9,13 +9,13 @@ async function fetchLists(): Promise<List[]> {
   const { data, error } = await supabase
     .from('lists')
     .select('*')
-    .order('created_at', { ascending: false })
+    .order('position', { ascending: true })
 
   if (error) throw error
   return data || []
 }
 
-async function fetchList(id: string): Promise<List | null> {
+async function fetchList(id: string): Promise<List> {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('lists')
@@ -24,10 +24,10 @@ async function fetchList(id: string): Promise<List | null> {
     .single()
 
   if (error) throw error
-  return data
+  return data as List
 }
 
-async function createList(name: string): Promise<List> {
+async function createList({ name, position }: { name: string; position: number }): Promise<List> {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -35,7 +35,7 @@ async function createList(name: string): Promise<List> {
 
   const { data, error } = await supabase
     .from('lists')
-    .insert({ name, owner_id: user.id })
+    .insert({ name, owner_id: user.id, position })
     .select()
     .single()
 
@@ -66,6 +66,19 @@ async function renameList({ id, name }: { id: string; name: string }): Promise<L
   return data
 }
 
+async function reorderLists(updates: { id: string; position: number }[]): Promise<void> {
+  const supabase = createClient()
+
+  for (const { id, position } of updates) {
+    const { error } = await supabase
+      .from('lists')
+      .update({ position })
+      .eq('id', id)
+
+    if (error) throw error
+  }
+}
+
 export const listsQueryOptions = queryOptions({
   queryKey: ['lists'],
   queryFn: fetchLists,
@@ -82,8 +95,33 @@ export function useLists() {
   return useQuery(listsQueryOptions)
 }
 
-export function useList(id: string) {
-  return useQuery(listQueryOptions(id))
+export function useList<TData = List>(
+  id: string,
+  options?: { select?: (data: List) => TData },
+) {
+  return useQuery({
+    ...listQueryOptions(id),
+    select: options?.select,
+  })
+}
+
+export function useSuspenseLists<TData = List[]>(
+  options?: { select?: (data: List[]) => TData },
+) {
+  return useSuspenseQuery({
+    ...listsQueryOptions,
+    select: options?.select,
+  })
+}
+
+export function useSuspenseList<TData = List>(
+  id: string,
+  options?: { select?: (data: List) => TData },
+) {
+  return useSuspenseQuery({
+    ...listQueryOptions(id),
+    select: options?.select,
+  })
 }
 
 export function useCreateList() {
@@ -91,7 +129,7 @@ export function useCreateList() {
 
   return useMutation({
     mutationFn: createList,
-    onMutate: async (name) => {
+    onMutate: async ({ name, position }) => {
       await queryClient.cancelQueries({ queryKey: listsQueryOptions.queryKey })
       const previous = queryClient.getQueryData<List[]>(listsQueryOptions.queryKey)
 
@@ -101,11 +139,12 @@ export function useCreateList() {
         name,
         owner_id: '',
         share_token: '',
+        position,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }
       queryClient.setQueryData<List[]>(listsQueryOptions.queryKey, (old) =>
-        old ? [optimisticList, ...old] : [optimisticList]
+        old ? [...old, optimisticList] : [optimisticList]
       )
 
       return { previous }
@@ -161,6 +200,40 @@ export function useRenameList() {
       queryClient.setQueryData<List[]>(listsQueryOptions.queryKey, (old) =>
         old?.map((list) => (list.id === id ? { ...list, name } : list))
       )
+
+      return { previous }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(listsQueryOptions.queryKey, context.previous)
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: listsQueryOptions.queryKey })
+    },
+  })
+}
+
+export function useReorderLists() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: reorderLists,
+    onMutate: async (updates) => {
+      await queryClient.cancelQueries({ queryKey: listsQueryOptions.queryKey })
+      const previous = queryClient.getQueryData<List[]>(listsQueryOptions.queryKey)
+
+      // Optimistically update positions
+      queryClient.setQueryData<List[]>(listsQueryOptions.queryKey, (old) => {
+        if (!old) return old
+        const positionMap = new Map(updates.map((u) => [u.id, u.position]))
+        return old
+          .map((list) => ({
+            ...list,
+            position: positionMap.has(list.id) ? positionMap.get(list.id)! : list.position,
+          }))
+          .sort((a, b) => a.position - b.position)
+      })
 
       return { previous }
     },

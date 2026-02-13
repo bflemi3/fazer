@@ -73,6 +73,7 @@ export type Database = {
           id: string
           name: string
           owner_id: string
+          position: number
           share_token: string
           updated_at: string
         }
@@ -81,6 +82,7 @@ export type Database = {
           id?: string
           name: string
           owner_id: string
+          position?: number
           share_token?: string
           updated_at?: string
         }
@@ -89,6 +91,7 @@ export type Database = {
           id?: string
           name?: string
           owner_id?: string
+          position?: number
           share_token?: string
           updated_at?: string
         }

@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient, queryOptions } from '@tanstack/react-query'
+import { useQuery, useSuspenseQuery, useMutation, useQueryClient, queryOptions } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import type { Tables } from '@/supabase/database.types'
 
@@ -100,6 +100,10 @@ export function todosQueryOptions(listId: string) {
 
 export function useTodos(listId: string) {
   return useQuery(todosQueryOptions(listId))
+}
+
+export function useSuspenseTodos(listId: string) {
+  return useSuspenseQuery(todosQueryOptions(listId))
 }
 
 export function useCreateTodo(listId: string) {

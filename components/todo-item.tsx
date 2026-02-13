@@ -1,7 +1,8 @@
 'use client'
 
 import { X } from 'lucide-react'
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, memo } from 'react'
+import { useTranslations } from 'next-intl'
 import { useToggleTodo, useDeleteTodo, useUpdateTodo } from '@/lib/hooks/use-todos'
 import { useLongPress } from '@/lib/hooks/use-long-press'
 import { Button } from '@/components/ui/button'
@@ -15,7 +16,8 @@ type Props = {
   listId: string
 }
 
-export function TodoItem({ todo, listId }: Props) {
+export const TodoItem = memo(function TodoItem({ todo, listId }: Props) {
+  const t = useTranslations()
   const toggleTodo = useToggleTodo(listId)
   const deleteTodo = useDeleteTodo(listId)
   const updateTodo = useUpdateTodo(listId)
@@ -113,4 +115,4 @@ export function TodoItem({ todo, listId }: Props) {
       </Button>
     </ListCard>
   )
-}
+})
