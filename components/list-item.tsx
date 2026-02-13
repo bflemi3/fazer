@@ -77,7 +77,11 @@ export const ListItem = memo(function ListItem({ listId }: Props) {
 
   if (!list) return null
 
-  const isOwner = profile?.id === list.owner_id
+  // Narrowed binding — `list` is guaranteed defined after the guard above,
+  // but TS can't narrow across nested function declarations.
+  const l = list!
+
+  const isOwner = profile?.id === l.owner_id
 
   function handleClick() {
     if (isEditing || longPress.shouldSuppress()) return
@@ -86,8 +90,8 @@ export const ListItem = memo(function ListItem({ listId }: Props) {
 
   async function handleSave() {
     const trimmed = editName.trim()
-    if (!trimmed || trimmed === list.name) {
-      setEditName(list.name)
+    if (!trimmed || trimmed === l.name) {
+      setEditName(l.name)
       setIsEditing(false)
       return
     }
@@ -100,7 +104,7 @@ export const ListItem = memo(function ListItem({ listId }: Props) {
       e.preventDefault()
       handleSave()
     } else if (e.key === 'Escape') {
-      setEditName(list.name)
+      setEditName(l.name)
       setIsEditing(false)
     }
   }
@@ -127,10 +131,10 @@ export const ListItem = memo(function ListItem({ listId }: Props) {
           ) : (
             <div className="min-w-0 flex-1 text-left">
               <span className="text-lg font-medium text-zinc-900 dark:text-zinc-50">
-                {list.name}
+                {l.name}
               </span>
               <span className="block text-sm text-zinc-500 dark:text-zinc-400">
-                {t('lists.created', { time: formatDistanceToNow(new Date(list.created_at), { addSuffix: true }) })}
+                {t('lists.created', { time: formatDistanceToNow(new Date(l.created_at), { addSuffix: true }) })}
               </span>
             </div>
           )}
@@ -192,7 +196,7 @@ export const ListItem = memo(function ListItem({ listId }: Props) {
 
       <ShareModal
         listId={listId}
-        shareToken={list.share_token}
+        shareToken={l.share_token}
         open={showShareModal}
         onClose={() => setShowShareModal(false)}
       />
