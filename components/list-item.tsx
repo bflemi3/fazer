@@ -47,12 +47,10 @@ export const ListItem = memo(function ListItem({ listId }: Props) {
   )
   const { data: list } = useSuspenseLists({ select: selectList })
 
-  if (!list) return null
-
-  const isOwner = profile?.id === list.owner_id
+  const listName = list?.name ?? ''
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
-  const [editName, setEditName] = useState(list.name)
+  const [editName, setEditName] = useState(listName)
   const [showShareModal, setShowShareModal] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -73,9 +71,13 @@ export const ListItem = memo(function ListItem({ listId }: Props) {
 
   useEffect(() => {
     if (!isEditing) {
-      setEditName(list.name)
+      setEditName(listName)
     }
-  }, [list.name, isEditing])
+  }, [listName, isEditing])
+
+  if (!list) return null
+
+  const isOwner = profile?.id === list.owner_id
 
   function handleClick() {
     if (isEditing || longPress.shouldSuppress()) return

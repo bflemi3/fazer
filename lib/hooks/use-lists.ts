@@ -149,6 +149,12 @@ export function useCreateList() {
 
       return { previous }
     },
+    onSuccess: (newList) => {
+      // Seed individual caches so the list page renders instantly
+      queryClient.setQueryData(listQueryOptions(newList.id).queryKey, newList)
+      queryClient.setQueryData(['todos', newList.id], [])
+      queryClient.setQueryData(['collaborators', newList.id], [])
+    },
     onError: (_err, _name, context) => {
       if (context?.previous) {
         queryClient.setQueryData(listsQueryOptions.queryKey, context.previous)
