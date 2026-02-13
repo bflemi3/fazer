@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.6.4
+
+- Pages load more smoothly with placeholder skeletons instead of spinners.
+- Improved performance — list updates no longer cause unnecessary re-renders.
+
 ## v0.6.3
 
 - Navigating between pages now feels faster — pages are pre-loaded before you tap.
