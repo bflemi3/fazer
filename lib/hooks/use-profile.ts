@@ -1,4 +1,4 @@
-import { useQuery, queryOptions } from '@tanstack/react-query'
+import { useQuery, useSuspenseQuery, queryOptions } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import type { Tables } from '@/supabase/database.types'
 
@@ -70,6 +70,16 @@ export function useProfile() {
   return {
     profile,
     isLoading,
+    firstName: profile?.firstName || '',
+    displayName: profile?.displayName || '',
+  }
+}
+
+export function useSuspenseProfile() {
+  const { data: profile } = useSuspenseQuery(profileQueryOptions)
+
+  return {
+    profile,
     firstName: profile?.firstName || '',
     displayName: profile?.displayName || '',
   }

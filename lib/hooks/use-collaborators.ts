@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient, queryOptions } from '@tanstack/react-query'
+import { useQuery, useSuspenseQuery, useMutation, useQueryClient, queryOptions } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import type { Tables } from '@/supabase/database.types'
 
@@ -85,6 +85,10 @@ export function collaboratorsQueryOptions(listId: string) {
 
 export function useCollaborators(listId: string) {
   return useQuery(collaboratorsQueryOptions(listId))
+}
+
+export function useSuspenseCollaborators(listId: string) {
+  return useSuspenseQuery(collaboratorsQueryOptions(listId))
 }
 
 export function useRemoveCollaborator(listId: string) {

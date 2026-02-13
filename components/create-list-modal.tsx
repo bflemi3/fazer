@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { useCreateList } from '@/lib/hooks/use-lists'
+import { useCreateList, useLists } from '@/lib/hooks/use-lists'
 import {
   Dialog,
   DialogContent,
@@ -18,17 +18,19 @@ type Props = {
   onClose: () => void
 }
 
-export function CreateListModal({ open, onClose }: Props) {
+export const CreateListModal = memo(function CreateListModal({ open, onClose }: Props) {
   const t = useTranslations()
   const router = useRouter()
   const createList = useCreateList()
+  const { data: lists } = useLists()
   const [name, setName] = useState('')
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!name.trim()) return
 
-    const newList = await createList.mutateAsync(name.trim())
+    const position = lists ? lists.length : 0
+    const newList = await createList.mutateAsync({ name: name.trim(), position })
     setName('')
     onClose()
     router.push(`/l/${newList.id}`)
@@ -67,4 +69,4 @@ export function CreateListModal({ open, onClose }: Props) {
       </DialogContent>
     </Dialog>
   )
-}
+})

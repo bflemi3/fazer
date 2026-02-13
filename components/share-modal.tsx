@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Check, Copy, X } from 'lucide-react'
 import { useCollaborators, useRemoveCollaborator } from '@/lib/hooks/use-collaborators'
+import { useProfile } from '@/lib/hooks/use-profile'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -13,26 +14,27 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { UserAvatar } from './user-avatar'
-import type { List } from '@/lib/hooks/use-lists'
 
 type Props = {
+  listId: string
+  shareToken: string
   open: boolean
   onClose: () => void
-  list: List
-  currentUserId: string
 }
 
-export function ShareModal({ open, onClose, list, currentUserId }: Props) {
+export function ShareModal({ listId, shareToken, open, onClose }: Props) {
   const t = useTranslations('share')
-  const { data: members } = useCollaborators(list.id)
-  const removeCollaborator = useRemoveCollaborator(list.id)
+  const { profile } = useProfile()
+  const currentUserId = profile?.id
+  const { data: members } = useCollaborators(listId)
+  const removeCollaborator = useRemoveCollaborator(listId)
   const [copied, setCopied] = useState(false)
 
   const shareUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/s/${list.share_token}`
+    ? `${window.location.origin}/s/${shareToken}`
     : ''
 
-  const isOwner = list.owner_id === currentUserId
+  const isOwner = members?.some((m) => m.id === currentUserId && m.role === 'owner') ?? false
 
   async function handleCopy() {
     await navigator.clipboard.writeText(shareUrl)
@@ -103,7 +105,7 @@ export function ShareModal({ open, onClose, list, currentUserId }: Props) {
                         variant="ghost"
                         size="icon"
                         className="shrink-0 text-zinc-400 hover:text-red-600 dark:text-zinc-500 dark:hover:text-red-400"
-                        onClick={() => removeCollaborator.mutate({ listId: list.id, userId: member.id })}
+                        onClick={() => removeCollaborator.mutate({ listId, userId: member.id })}
                       >
                         <X className="h-4 w-4" />
                       </Button>

@@ -1,14 +1,13 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLongPress } from '@/lib/hooks/use-long-press'
 import { useTranslations } from 'next-intl'
 import { formatDistanceToNow } from 'date-fns'
 import { MoreHorizontal, Trash2, Share2, Pencil } from 'lucide-react'
-import { useDeleteList, useRenameList } from '@/lib/hooks/use-lists'
+import { useDeleteList, useRenameList, useSuspenseLists } from '@/lib/hooks/use-lists'
 import { useProfile } from '@/lib/hooks/use-profile'
-import { useProfileById } from '@/lib/hooks/use-profile'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -28,25 +27,30 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { ListCard } from '@/components/ui/list-card'
-import { UserAvatar } from './user-avatar'
 import { ShareModal } from './share-modal'
 import type { List } from '@/lib/hooks/use-lists'
 
 type Props = {
-  list: List
+  listId: string
 }
 
-export function ListItem({ list }: Props) {
+export const ListItem = memo(function ListItem({ listId }: Props) {
   const t = useTranslations()
   const router = useRouter()
   const deleteList = useDeleteList()
   const renameList = useRenameList()
   const { profile } = useProfile()
-  const { data: ownerProfile } = useProfileById(list.owner_id)
-  const isOwner = profile?.id === list.owner_id
+
+  const selectList = useMemo(
+    () => (lists: List[]) => lists.find(l => l.id === listId),
+    [listId]
+  )
+  const { data: list } = useSuspenseLists({ select: selectList })
+
+  const listName = list?.name ?? ''
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
-  const [editName, setEditName] = useState(list.name)
+  const [editName, setEditName] = useState(listName)
   const [showShareModal, setShowShareModal] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -55,8 +59,8 @@ export function ListItem({ list }: Props) {
   )
 
   useEffect(() => {
-    router.prefetch(`/l/${list.id}`)
-  }, [router, list.id])
+    router.prefetch(`/l/${listId}`)
+  }, [router, listId])
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -67,13 +71,17 @@ export function ListItem({ list }: Props) {
 
   useEffect(() => {
     if (!isEditing) {
-      setEditName(list.name)
+      setEditName(listName)
     }
-  }, [list.name, isEditing])
+  }, [listName, isEditing])
+
+  if (!list) return null
+
+  const isOwner = profile?.id === list.owner_id
 
   function handleClick() {
     if (isEditing || longPress.shouldSuppress()) return
-    router.push(`/l/${list.id}`)
+    router.push(`/l/${listId}`)
   }
 
   async function handleSave() {
@@ -83,7 +91,7 @@ export function ListItem({ list }: Props) {
       setIsEditing(false)
       return
     }
-    await renameList.mutateAsync({ id: list.id, name: trimmed })
+    await renameList.mutateAsync({ id: listId, name: trimmed })
     setIsEditing(false)
   }
 
@@ -98,33 +106,35 @@ export function ListItem({ list }: Props) {
   }
 
   async function handleDelete() {
-    await deleteList.mutateAsync(list.id)
+    await deleteList.mutateAsync(listId)
     setShowDeleteDialog(false)
   }
 
   return (
     <>
       <ListCard onClick={handleClick} {...longPress.handlers} className="group flex cursor-pointer items-center justify-between">
-        {isEditing ? (
-          <Input
-            ref={inputRef}
-            value={editName}
-            onChange={(e) => setEditName(e.target.value)}
-            onBlur={handleSave}
-            onKeyDown={handleKeyDown}
-            onClick={(e) => e.stopPropagation()}
-            className="h-auto flex-1 border-0 bg-transparent px-0 py-0 text-lg font-medium shadow-none"
-          />
-        ) : (
-          <div className="flex-1 text-left">
-            <span className="text-lg font-medium text-zinc-900 dark:text-zinc-50">
-              {list.name}
-            </span>
-            <span className="block text-sm text-zinc-500 dark:text-zinc-400">
-              {t('lists.created', { time: formatDistanceToNow(new Date(list.created_at), { addSuffix: true }) })}
-            </span>
-          </div>
-        )}
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          {isEditing ? (
+            <Input
+              ref={inputRef}
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              onBlur={handleSave}
+              onKeyDown={handleKeyDown}
+              onClick={(e) => e.stopPropagation()}
+              className="h-auto flex-1 border-0 bg-transparent px-0 py-0 text-lg font-medium shadow-none"
+            />
+          ) : (
+            <div className="min-w-0 flex-1 text-left">
+              <span className="text-lg font-medium text-zinc-900 dark:text-zinc-50">
+                {list.name}
+              </span>
+              <span className="block text-sm text-zinc-500 dark:text-zinc-400">
+                {t('lists.created', { time: formatDistanceToNow(new Date(list.created_at), { addSuffix: true }) })}
+              </span>
+            </div>
+          )}
+        </div>
 
         <div onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
           <DropdownMenu>
@@ -180,14 +190,12 @@ export function ListItem({ list }: Props) {
         </AlertDialogContent>
       </AlertDialog>
 
-      {profile && (
-        <ShareModal
-          open={showShareModal}
-          onClose={() => setShowShareModal(false)}
-          list={list}
-          currentUserId={profile.id}
-        />
-      )}
+      <ShareModal
+        listId={listId}
+        shareToken={list.share_token}
+        open={showShareModal}
+        onClose={() => setShowShareModal(false)}
+      />
     </>
   )
-}
+})

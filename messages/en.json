@@ -7,7 +7,8 @@
     "delete": "Delete",
     "rename": "Rename",
     "create": "Create",
-    "share": "Share"
+    "share": "Share",
+    "dragToReorder": "Drag to reorder"
   },
   "auth": {
     "welcome": "Welcome to Fazer",
