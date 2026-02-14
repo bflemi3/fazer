@@ -1,17 +1,41 @@
 'use client'
 
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
-import { useCreateTodo, useSuspenseTodos } from '@/lib/hooks/use-todos'
+import {
+  DndContext,
+  DragOverlay,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  defaultDropAnimationSideEffects,
+} from '@dnd-kit/core'
+import type { DragEndEvent, DragStartEvent, DropAnimation } from '@dnd-kit/core'
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable'
+import { useCreateTodo, useSuspenseTodos, useReorderTodos } from '@/lib/hooks/use-todos'
 import { useRealtimeInvalidation } from '@/lib/hooks/use-realtime-invalidation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { SortableTodoItem, TodoDragOverlayContent } from './sortable-todo-item'
 import { TodoItem } from './todo-item'
 
 type Props = {
   listId: string
+}
+
+const dropAnimation: DropAnimation = {
+  sideEffects: defaultDropAnimationSideEffects({
+    styles: { active: { opacity: '0.5' } },
+  }),
 }
 
 export function TodoList({ listId }: Props) {
@@ -26,10 +50,12 @@ export function TodoList({ listId }: Props) {
     queryKeys: [['todos', listId]],
   })
   const createTodo = useCreateTodo(listId)
+  const reorderTodos = useReorderTodos(listId)
 
   const [isCreating, setIsCreating] = useState(false)
   const [newTodoTitle, setNewTodoTitle] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
+  const [activeId, setActiveId] = useState<string | null>(null)
 
   const hasTodos = todos.length > 0
 
@@ -41,6 +67,56 @@ export function TodoList({ listId }: Props) {
     () => todos.filter((t) => t.is_complete).sort((a, b) => a.position - b.position),
     [todos],
   )
+
+  // Local order for drag reordering — incomplete todos only
+  const [localOrder, setLocalOrder] = useState<string[]>(() =>
+    incompleteTodos.map((t) => t.id),
+  )
+
+  // Sync local order when server data changes (mutation settled, realtime, etc.)
+  const serverIncompleteIds = useMemo(
+    () => incompleteTodos.map((t) => t.id),
+    [incompleteTodos],
+  )
+  useEffect(() => {
+    setLocalOrder(serverIncompleteIds)
+  }, [serverIncompleteIds])
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  )
+
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    setActiveId(event.active.id as string)
+  }, [])
+
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    setActiveId(null)
+
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    setLocalOrder((prev) => {
+      const oldIndex = prev.indexOf(active.id as string)
+      const newIndex = prev.indexOf(over.id as string)
+      const reordered = arrayMove(prev, oldIndex, newIndex)
+
+      const updates = reordered.map((id, index) => ({ id, position: index }))
+      reorderTodos.mutate(updates)
+
+      return reordered
+    })
+  }, [reorderTodos])
+
+  const handleDragCancel = useCallback(() => {
+    setActiveId(null)
+  }, [])
+
+  // Find the active todo for the drag overlay
+  const activeTodo = activeId
+    ? todos.find((t) => t.id === activeId) ?? null
+    : null
 
   useEffect(() => {
     if (isCreating && inputRef.current) {
@@ -99,16 +175,31 @@ export function TodoList({ listId }: Props) {
 
   return (
     <div className="space-y-4">
-      {/* Incomplete todos */}
-      {incompleteTodos.length > 0 && (
-        <div className="space-y-2">
-          {incompleteTodos.map((todo) => (
-            <TodoItem key={todo.id} todo={todo} listId={listId} />
-          ))}
-        </div>
+      {/* Incomplete todos — draggable */}
+      {localOrder.length > 0 && (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
+        >
+          <SortableContext items={localOrder} strategy={verticalListSortingStrategy}>
+            <div className="grid gap-2">
+              {localOrder.map((id) => (
+                <SortableTodoItem key={id} todoId={id} listId={listId} />
+              ))}
+            </div>
+          </SortableContext>
+          <DragOverlay dropAnimation={dropAnimation}>
+            {activeTodo ? (
+              <TodoDragOverlayContent todo={activeTodo} listId={listId} />
+            ) : null}
+          </DragOverlay>
+        </DndContext>
       )}
 
-      {/* Completed todos */}
+      {/* Completed todos — static, no drag */}
       {completedTodos.length > 0 && (
         <div className="space-y-2">
           {completedTodos.map((todo) => (

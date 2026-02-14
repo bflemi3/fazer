@@ -5,15 +5,32 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
+import {
+  DndContext,
+  DragOverlay,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  defaultDropAnimationSideEffects,
+} from '@dnd-kit/core'
+import type { DragEndEvent, DragStartEvent, DropAnimation } from '@dnd-kit/core'
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable'
 import { useSuspenseProfile } from '@/lib/hooks/use-profile'
-import { useSuspenseLists } from '@/lib/hooks/use-lists'
+import { useSuspenseLists, useReorderLists } from '@/lib/hooks/use-lists'
 import { useRealtimeInvalidation } from '@/lib/hooks/use-realtime-invalidation'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { TopBar } from './top-bar'
 import { ListControls } from './list-controls'
 import { CreateListModal } from './create-list-modal'
-import { ListItem } from './list-item'
+import { SortableListItem, DragOverlayContent } from './sortable-list-item'
 import { Hint } from './hint'
 import { InstallPrompt } from './install-prompt'
 // --- Skeletons ---
@@ -64,10 +81,25 @@ function HomeGreeting() {
   )
 }
 
+const dropAnimation: DropAnimation = {
+  sideEffects: defaultDropAnimationSideEffects({
+    styles: { active: { opacity: '0.5' } },
+  }),
+}
+
 const HomeListsView = memo(function HomeListsView({ onCreateList }: { onCreateList: () => void }) {
   const t = useTranslations()
   const { data: lists } = useSuspenseLists()
+  const reorderLists = useReorderLists()
   const [searchQuery, setSearchQuery] = useState('')
+  const [activeId, setActiveId] = useState<string | null>(null)
+  const [localOrder, setLocalOrder] = useState<string[]>(() => lists.map(l => l.id))
+
+  // Sync local order when server data changes (mutation settled, realtime, etc.)
+  const serverIds = useMemo(() => lists.map(l => l.id), [lists])
+  useEffect(() => {
+    setLocalOrder(serverIds)
+  }, [serverIds])
 
   useRealtimeInvalidation({
     channel: 'lists',
@@ -75,18 +107,48 @@ const HomeListsView = memo(function HomeListsView({ onCreateList }: { onCreateLi
     queryKeys: [['lists']],
   })
 
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  )
+
   const handleSearchChange = useCallback((query: string) => setSearchQuery(query), [])
 
   const isSearching = searchQuery.trim().length > 0
 
   const displayedListIds = useMemo(() => {
-    if (!isSearching) return lists.map(l => l.id)
+    if (!isSearching) return localOrder
 
     const query = searchQuery.toLowerCase()
-    return lists
-      .filter((list) => list.name.toLowerCase().includes(query))
-      .map(l => l.id)
-  }, [lists, searchQuery, isSearching])
+    const nameMap = new Map(lists.map(l => [l.id, l.name]))
+    return localOrder.filter((id) => nameMap.get(id)?.toLowerCase().includes(query))
+  }, [localOrder, lists, searchQuery, isSearching])
+
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    setActiveId(event.active.id as string)
+  }, [])
+
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    setActiveId(null)
+
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    setLocalOrder((prev) => {
+      const oldIndex = prev.indexOf(active.id as string)
+      const newIndex = prev.indexOf(over.id as string)
+      const reordered = arrayMove(prev, oldIndex, newIndex)
+
+      const updates = reordered.map((id, index) => ({ id, position: index }))
+      reorderLists.mutate(updates)
+
+      return reordered
+    })
+  }, [reorderLists])
+
+  const handleDragCancel = useCallback(() => {
+    setActiveId(null)
+  }, [])
 
   const hasLists = lists.length > 0
 
@@ -122,11 +184,24 @@ const HomeListsView = memo(function HomeListsView({ onCreateList }: { onCreateLi
       </Hint>
 
       {displayedListIds.length > 0 ? (
-        <div className="space-y-2">
-          {displayedListIds.map((id) => (
-            <ListItem key={id} listId={id} />
-          ))}
-        </div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
+        >
+          <SortableContext items={displayedListIds} strategy={verticalListSortingStrategy}>
+            <div className="grid gap-2">
+              {displayedListIds.map((id) => (
+                <SortableListItem key={id} listId={id} disabled={isSearching} />
+              ))}
+            </div>
+          </SortableContext>
+          <DragOverlay dropAnimation={dropAnimation}>
+            {activeId ? <DragOverlayContent listId={activeId} /> : null}
+          </DragOverlay>
+        </DndContext>
       ) : (
         <div className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
           {t('lists.noResults')}
