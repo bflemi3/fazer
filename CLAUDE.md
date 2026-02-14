@@ -216,11 +216,12 @@ npm run lint      # Run ESLint
   - `0.x.PATCH` — bug fixes, small improvements
 - Create a **GitHub Release** for each feature PR merged to `main`.
 - Workflow after merging a feature PR:
-  1. Bump `version` in `package.json`
-  2. Commit the bump to `main`
-  3. Tag: `git tag vX.Y.Z`
-  4. Push tag: `git push origin vX.Y.Z`
-  5. Create release: `gh release create vX.Y.Z --title "vX.Y.Z — Short description" --generate-notes`
+  1. If there are new Supabase migrations, push them to production: `npx supabase db push --linked`
+  2. Bump `version` in `package.json`
+  3. Commit the bump to `main`
+  4. Tag: `git tag vX.Y.Z`
+  5. Push tag: `git push origin vX.Y.Z`
+  6. Create release: `gh release create vX.Y.Z --title "vX.Y.Z — Short description" --generate-notes`
 
 ---
 
