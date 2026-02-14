@@ -44,6 +44,7 @@
   - laptop
   - desktop
 - Mobile-first layout and comfortable touch targets.
+- All buttons and interactive elements must provide **touch feedback** (e.g., active/pressed state via `active:scale-95` or similar) so the user has tactile confirmation of taps.
 - Light and dark mode support.
 - Default to the user’s system color scheme.
 - UI should feel fast, unobtrusive, and predictable.
@@ -61,8 +62,9 @@
 ## PWA, responsiveness, and offline-first behavior
 
 - The app must be installable as a **Progressive Web App (PWA)**:
-  - “Add to Home Screen” on mobile devices
+  - "Add to Home Screen" on mobile devices
   - Runs in standalone / app-like mode
+- **Install prompt** should be a **toast notification** (not a passive banner) to more strongly nudge users to install. Show it persistently until dismissed or installed.
 - The app shell must load offline:
   - routes, layout, UI, and static assets
 - Offline behavior expectations:
@@ -247,6 +249,13 @@ npm run lint      # Run ESLint
   - Uncomplete all completed items at once
   - Delete all completed items at once
 - Details TBD — discuss UX approach when implementing.
+
+---
+
+## Owner avatar on shared lists (planned)
+
+- On the home page, any list created by another user should display the **owner's avatar** (e.g., a small profile image or initial) so the user can quickly distinguish their own lists from shared ones.
+- Details TBD — discuss placement and design when implementing.
 
 ---
 
