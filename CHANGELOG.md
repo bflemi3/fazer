@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.7.1
+
+- If something goes wrong, you'll now see a friendly error page instead of a blank screen.
+
 ## v0.7.0
 
 - Drag to reorder your lists and todos — grab the handle on the left and move items up or down.
