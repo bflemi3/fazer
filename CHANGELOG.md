@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.7.0
+
+- Drag to reorder your lists and todos — grab the handle on the left and move items up or down.
+- Completed todos stay put at the bottom and can't be dragged.
+
 ## v0.6.4
 
 - Pages load more smoothly with placeholder skeletons instead of spinners.
