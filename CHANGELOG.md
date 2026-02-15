@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.7.2
+
+- Lists shared with you now show the owner's avatar, so you can tell them apart from your own.
+
 ## v0.7.1
 
 - If something goes wrong, you'll now see a friendly error page instead of a blank screen.
