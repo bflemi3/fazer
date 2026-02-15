@@ -252,10 +252,9 @@ npm run lint      # Run ESLint
 
 ---
 
-## Owner avatar on shared lists (planned)
+## Owner avatar on shared lists (complete — v0.7.2)
 
-- On the home page, any list created by another user should display the **owner's avatar** (e.g., a small profile image or initial) so the user can quickly distinguish their own lists from shared ones.
-- Details TBD — discuss placement and design when implementing.
+- On the home page, any list created by another user displays the **owner's avatar** to the left of the menu button so users can distinguish their own lists from shared ones.
 
 ---
 
