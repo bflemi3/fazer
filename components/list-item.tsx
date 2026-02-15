@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl'
 import { formatDistanceToNow } from 'date-fns'
 import { MoreHorizontal, Trash2, Share2, Pencil } from 'lucide-react'
 import { useDeleteList, useRenameList, useSuspenseLists } from '@/lib/hooks/use-lists'
-import { useProfile } from '@/lib/hooks/use-profile'
+import { useProfile, useProfileById } from '@/lib/hooks/use-profile'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -27,6 +27,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { ListCard } from '@/components/ui/list-card'
+import { UserAvatar } from './user-avatar'
 import { ShareModal } from './share-modal'
 import type { List } from '@/lib/hooks/use-lists'
 
@@ -46,6 +47,7 @@ export const ListItem = memo(function ListItem({ listId }: Props) {
     [listId]
   )
   const { data: list } = useSuspenseLists({ select: selectList })
+  const { data: ownerProfile } = useProfileById(list?.owner_id ?? '')
 
   const listName = list?.name ?? ''
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -140,8 +142,16 @@ export const ListItem = memo(function ListItem({ listId }: Props) {
           )}
         </div>
 
-        <div onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
-          <DropdownMenu>
+        <div className="flex items-center gap-1">
+          {profile != null && profile.id !== l.owner_id && ownerProfile && (
+            <UserAvatar
+              displayName={ownerProfile.displayName}
+              avatarUrl={ownerProfile.avatar_url}
+              size="sm"
+            />
+          )}
+          <div onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
+            <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
@@ -171,6 +181,7 @@ export const ListItem = memo(function ListItem({ listId }: Props) {
               )}
             </DropdownMenuContent>
           </DropdownMenu>
+          </div>
         </div>
       </ListCard>
 
