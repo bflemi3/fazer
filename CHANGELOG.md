@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.8.0
+
+- The header now stays at the top as you scroll through long lists — no more losing your place.
+- A "+ New item" button appears in the header when the one at the bottom scrolls out of view.
+- Completed items are now grouped and collapsible — tap to expand or hide them.
+- You can uncomplete all items at once or delete all completed items from the list menu.
+
 ## v0.7.2
 
 - Lists shared with you now show the owner's avatar, so you can tell them apart from your own.
