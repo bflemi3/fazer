@@ -40,6 +40,14 @@ export async function GET(request: NextRequest) {
           display_name: meta?.full_name || meta?.name || null,
           avatar_url: meta?.avatar_url || meta?.picture || null,
         }).eq('id', user.id)
+
+        // Detect new user (created_at within 60 seconds) for analytics
+        const createdAt = new Date(user.created_at).getTime()
+        if (Date.now() - createdAt < 60_000) {
+          const url = new URL(response.headers.get('location')!)
+          url.searchParams.set('new_user', '1')
+          response.headers.set('location', url.toString())
+        }
       }
 
       return response
