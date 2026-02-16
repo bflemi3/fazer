@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.9.0
+
+- Basic analytics to help us understand how sharing and sign-ups are working.
+
 ## v0.8.0
 
 - The header now stays at the top as you scroll through long lists — no more losing your place.
