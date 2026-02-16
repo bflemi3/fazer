@@ -61,6 +61,11 @@
     "deleteTitle": "Excluir item",
     "deleteDescription": "Tem certeza que deseja excluir este item?",
     "createError": "Falha ao adicionar item",
+    "completedCount": "{count} concluídos",
+    "uncompleteAll": "Desmarcar todos",
+    "deleteCompleted": "Excluir concluídos",
+    "deleteCompletedTitle": "Excluir itens concluídos",
+    "deleteCompletedDescription": "Tem certeza? Isso excluirá permanentemente todos os itens concluídos.",
     "sort": {
       "incomplete-first": "Incompletos primeiro",
       "complete-first": "Completos primeiro",

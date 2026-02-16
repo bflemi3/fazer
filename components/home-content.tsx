@@ -37,7 +37,7 @@ import { InstallPrompt } from './install-prompt'
 
 function HomeGreetingSkeleton() {
   return (
-    <div className="mb-8 flex min-h-9 items-center pr-24">
+    <div className="flex min-h-9 items-center pr-24">
       <div>
         <Skeleton className="h-8 w-48" />
         <Skeleton className="mt-1 h-5 w-32" />
@@ -68,7 +68,7 @@ function HomeGreeting() {
   const { firstName } = useSuspenseProfile()
 
   return (
-    <div className="mb-8 flex min-h-9 items-center pr-24">
+    <div className="flex min-h-9 items-center pr-24">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           {t('auth.welcomeBack')}, {firstName}
@@ -87,11 +87,53 @@ const dropAnimation: DropAnimation = {
   }),
 }
 
-const HomeListsView = memo(function HomeListsView({ onCreateList }: { onCreateList: () => void }) {
+// --- HomeHeaderControls ---
+// Renders list controls, install prompt, and hint when lists exist.
+// Uses useSuspenseLists (deduplicated by React Query) to check hasLists.
+
+const selectHasLists = (lists: unknown[]) => lists.length > 0
+
+const HomeHeaderControls = memo(function HomeHeaderControls({
+  searchQuery,
+  onSearchChange,
+  onCreateList,
+}: {
+  searchQuery: string
+  onSearchChange: (query: string) => void
+  onCreateList: () => void
+}) {
+  const t = useTranslations()
+  const { data: hasLists } = useSuspenseLists({ select: selectHasLists })
+
+  if (!hasLists) return null
+
+  return (
+    <>
+      <ListControls
+        searchQuery={searchQuery}
+        onSearchChange={onSearchChange}
+        onCreateList={onCreateList}
+      />
+      <InstallPrompt />
+      <Hint storageKey="fazer-edit-hint-dismissed">
+        {t('todos.editHint')}
+      </Hint>
+    </>
+  )
+})
+
+// --- HomeListsView ---
+
+const HomeListsView = memo(function HomeListsView({
+  searchQuery,
+  onCreateList,
+}: {
+  searchQuery: string
+  onCreateList: () => void
+}) {
   const t = useTranslations()
   const { data: lists } = useSuspenseLists()
   const reorderLists = useReorderLists()
-  const [searchQuery, setSearchQuery] = useState('')
   const [activeId, setActiveId] = useState<string | null>(null)
   const [localOrder, setLocalOrder] = useState<string[]>(() => lists.map(l => l.id))
 
@@ -111,8 +153,6 @@ const HomeListsView = memo(function HomeListsView({ onCreateList }: { onCreateLi
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
-
-  const handleSearchChange = useCallback((query: string) => setSearchQuery(query), [])
 
   const isSearching = searchQuery.trim().length > 0
 
@@ -169,45 +209,29 @@ const HomeListsView = memo(function HomeListsView({ onCreateList }: { onCreateLi
     )
   }
 
-  return (
-    <>
-      <ListControls
-        searchQuery={searchQuery}
-        onSearchChange={handleSearchChange}
-        onCreateList={onCreateList}
-      />
-
-      <InstallPrompt />
-
-      <Hint storageKey="fazer-edit-hint-dismissed">
-        {t('todos.editHint')}
-      </Hint>
-
-      {displayedListIds.length > 0 ? (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-          onDragCancel={handleDragCancel}
-        >
-          <SortableContext items={displayedListIds} strategy={verticalListSortingStrategy}>
-            <div className="grid gap-2">
-              {displayedListIds.map((id) => (
-                <SortableListItem key={id} listId={id} disabled={isSearching} />
-              ))}
-            </div>
-          </SortableContext>
-          <DragOverlay dropAnimation={dropAnimation}>
-            {activeId ? <DragOverlayContent listId={activeId} /> : null}
-          </DragOverlay>
-        </DndContext>
-      ) : (
-        <div className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
-          {t('lists.noResults')}
+  return displayedListIds.length > 0 ? (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
+    >
+      <SortableContext items={displayedListIds} strategy={verticalListSortingStrategy}>
+        <div className="grid gap-2">
+          {displayedListIds.map((id) => (
+            <SortableListItem key={id} listId={id} disabled={isSearching} />
+          ))}
         </div>
-      )}
-    </>
+      </SortableContext>
+      <DragOverlay dropAnimation={dropAnimation}>
+        {activeId ? <DragOverlayContent listId={activeId} /> : null}
+      </DragOverlay>
+    </DndContext>
+  ) : (
+    <div className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
+      {t('lists.noResults')}
+    </div>
   )
 })
 
@@ -219,9 +243,11 @@ export function HomeContent() {
   const searchParams = useSearchParams()
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   const handleOpenCreateModal = useCallback(() => setIsCreateModalOpen(true), [])
   const handleCloseCreateModal = useCallback(() => setIsCreateModalOpen(false), [])
+  const handleSearchChange = useCallback((query: string) => setSearchQuery(query), [])
 
   useEffect(() => {
     if (searchParams.get('toast') === 'no-access') {
@@ -239,13 +265,27 @@ export function HomeContent() {
         onClose={handleCloseCreateModal}
       />
 
-      <div className="px-4 pt-4 pb-8">
+      {/* Sticky header */}
+      <div className="sticky top-0 z-40 bg-zinc-50 px-4 pt-4 pb-4 dark:bg-zinc-950">
         <Suspense fallback={<HomeGreetingSkeleton />}>
           <HomeGreeting />
         </Suspense>
+        <Suspense fallback={null}>
+          <HomeHeaderControls
+            searchQuery={searchQuery}
+            onSearchChange={handleSearchChange}
+            onCreateList={handleOpenCreateModal}
+          />
+        </Suspense>
+      </div>
 
+      {/* Scrollable content */}
+      <div className="px-4 pb-8">
         <Suspense fallback={<HomeListsSkeleton />}>
-          <HomeListsView onCreateList={handleOpenCreateModal} />
+          <HomeListsView
+            searchQuery={searchQuery}
+            onCreateList={handleOpenCreateModal}
+          />
         </Suspense>
       </div>
     </div>

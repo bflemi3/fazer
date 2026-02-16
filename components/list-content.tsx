@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState, useCallback } from 'react'
+import { Suspense, useState, useRef, useCallback } from 'react'
 import { TopBar } from './top-bar'
 import { ListHeader } from './list-header'
 import { TodoList } from './todo-list'
@@ -14,7 +14,7 @@ type Props = {
 
 function ListHeaderSkeleton() {
   return (
-    <div className="mb-8">
+    <div>
       {/* Back link row */}
       <div className="flex min-h-9 items-center">
         <Skeleton className="h-4 w-20" />
@@ -44,6 +44,11 @@ export function ListContent({ list }: Props) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const handleOpenCreateModal = useCallback(() => setIsCreateModalOpen(true), [])
 
+  const [isBottomVisible, setIsBottomVisible] = useState(true)
+  const triggerCreateRef = useRef<(() => void) | null>(null)
+  const handleBottomVisibilityChange = useCallback((visible: boolean) => setIsBottomVisible(visible), [])
+  const handleAddClick = useCallback(() => triggerCreateRef.current?.(), [])
+
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       <TopBar onCreateList={handleOpenCreateModal} />
@@ -53,13 +58,25 @@ export function ListContent({ list }: Props) {
         onClose={() => setIsCreateModalOpen(false)}
       />
 
-      <div className="px-4 pt-4 pb-8">
+      {/* Sticky header */}
+      <div className="sticky top-0 z-40 bg-zinc-50 px-4 pt-4 pb-4 dark:bg-zinc-950">
         <Suspense fallback={<ListHeaderSkeleton />}>
-          <ListHeader listId={list.id} />
+          <ListHeader
+            listId={list.id}
+            showAddButton={!isBottomVisible}
+            onAddClick={handleAddClick}
+          />
         </Suspense>
+      </div>
 
+      {/* Scrollable content */}
+      <div className="px-4 pb-8">
         <Suspense fallback={<TodoListSkeleton />}>
-          <TodoList listId={list.id} />
+          <TodoList
+            listId={list.id}
+            triggerCreateRef={triggerCreateRef}
+            onBottomVisibilityChange={handleBottomVisibilityChange}
+          />
         </Suspense>
       </div>
     </div>

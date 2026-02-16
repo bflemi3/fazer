@@ -77,6 +77,30 @@ async function updateTodo({ id, title }: { id: string; title: string }): Promise
   return data
 }
 
+async function deleteCompletedTodos(listId: string): Promise<void> {
+  const supabase = createClient()
+  const { error } = await supabase
+    .from('todos')
+    .delete()
+    .eq('list_id', listId)
+    .eq('is_complete', true)
+
+  if (error) throw error
+}
+
+async function uncompleteAllTodos(listId: string): Promise<void> {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  const { error } = await supabase
+    .from('todos')
+    .update({ is_complete: false, updated_by: user?.id })
+    .eq('list_id', listId)
+    .eq('is_complete', true)
+
+  if (error) throw error
+}
+
 async function reorderTodos(updates: { id: string; position: number }[]): Promise<void> {
   const supabase = createClient()
 
@@ -102,8 +126,14 @@ export function useTodos(listId: string) {
   return useQuery(todosQueryOptions(listId))
 }
 
-export function useSuspenseTodos(listId: string) {
-  return useSuspenseQuery(todosQueryOptions(listId))
+export function useSuspenseTodos<TData = Todo[]>(
+  listId: string,
+  options?: { select?: (data: Todo[]) => TData },
+) {
+  return useSuspenseQuery({
+    ...todosQueryOptions(listId),
+    select: options?.select,
+  })
 }
 
 export function useCreateTodo(listId: string) {
@@ -256,6 +286,62 @@ export function useReorderTodos(listId: string) {
           }))
           .sort((a, b) => a.position - b.position)
       })
+
+      return { previous }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKey, context.previous)
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey })
+    },
+  })
+}
+
+export function useDeleteCompletedTodos(listId: string) {
+  const queryClient = useQueryClient()
+  const queryKey = todosQueryOptions(listId).queryKey
+
+  return useMutation({
+    mutationFn: () => deleteCompletedTodos(listId),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey })
+      const previous = queryClient.getQueryData<Todo[]>(queryKey)
+
+      queryClient.setQueryData<Todo[]>(queryKey, (old) =>
+        old?.filter((todo) => !todo.is_complete)
+      )
+
+      return { previous }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKey, context.previous)
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey })
+    },
+  })
+}
+
+export function useUncompleteAllTodos(listId: string) {
+  const queryClient = useQueryClient()
+  const queryKey = todosQueryOptions(listId).queryKey
+
+  return useMutation({
+    mutationFn: () => uncompleteAllTodos(listId),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey })
+      const previous = queryClient.getQueryData<Todo[]>(queryKey)
+
+      queryClient.setQueryData<Todo[]>(queryKey, (old) =>
+        old?.map((todo) =>
+          todo.is_complete ? { ...todo, is_complete: false } : todo
+        )
+      )
 
       return { previous }
     },

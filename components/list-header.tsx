@@ -2,10 +2,12 @@
 
 import { Suspense, useState, useRef, useEffect, useCallback, memo } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, MoreHorizontal, Trash2, Share2 } from 'lucide-react'
+import { ArrowLeft, MoreHorizontal, Plus, Trash2, Share2, ListChecks, RotateCcw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useSuspenseList, useRenameList, useDeleteList } from '@/lib/hooks/use-lists'
+import { useSuspenseTodos, useUncompleteAllTodos, useDeleteCompletedTodos } from '@/lib/hooks/use-todos'
+import type { Todo } from '@/lib/hooks/use-todos'
 import { useSuspenseCollaborators } from '@/lib/hooks/use-collaborators'
 import { useProfile } from '@/lib/hooks/use-profile'
 import { useRealtimeInvalidation } from '@/lib/hooks/use-realtime-invalidation'
@@ -16,6 +18,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
@@ -37,10 +40,11 @@ import { ShareModal } from './share-modal'
 const selectName = (list: { name: string }) => list.name
 const selectOwnerId = (list: { owner_id: string }) => list.owner_id
 const selectShareToken = (list: { share_token: string }) => list.share_token
+const selectCompletedCount = (todos: Todo[]) => todos.filter((t) => t.is_complete).length
 
 function ListMembersSkeleton() {
   return (
-    <div className="mt-3 flex -space-x-2">
+    <div className="flex -space-x-2">
       <Skeleton className="size-6 rounded-full" />
       <Skeleton className="size-6 rounded-full" />
       <Skeleton className="size-6 rounded-full" />
@@ -134,14 +138,18 @@ const ListTitle = memo(function ListTitle({ listId }: { listId: string }) {
 
 const ListActions = memo(function ListActions({ listId, onShowShareModal }: { listId: string; onShowShareModal: () => void }) {
   const { data: ownerId } = useSuspenseList(listId, { select: selectOwnerId })
+  const { data: completedCount } = useSuspenseTodos(listId, { select: selectCompletedCount })
   const { profile } = useProfile()
   const isOwner = profile?.id === ownerId
 
   const router = useRouter()
   const t = useTranslations()
   const deleteList = useDeleteList()
+  const uncompleteAll = useUncompleteAllTodos(listId)
+  const deleteCompleted = useDeleteCompletedTodos(listId)
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showDeleteCompletedDialog, setShowDeleteCompletedDialog] = useState(false)
 
   async function handleDeleteList() {
     await deleteList.mutateAsync(listId)
@@ -179,7 +187,25 @@ const ListActions = memo(function ListActions({ listId, onShowShareModal }: { li
               <Share2 className="h-4 w-4" />
               {t('common.share')}
             </DropdownMenuItem>
+            {completedCount > 0 && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => uncompleteAll.mutate()}>
+                  <RotateCcw className="h-4 w-4" />
+                  {t('todos.uncompleteAll')}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setShowDeleteCompletedDialog(true)}
+                  className="text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
+                >
+                  <ListChecks className="h-4 w-4 text-red-600 dark:text-red-400" />
+                  {t('todos.deleteCompleted')}
+                </DropdownMenuItem>
+              </>
+            )}
             {isOwner && (
+              <>
+              <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => setShowDeleteDialog(true)}
                 className="text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
@@ -187,6 +213,7 @@ const ListActions = memo(function ListActions({ listId, onShowShareModal }: { li
                 <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
                 {t('lists.deleteList')}
               </DropdownMenuItem>
+              </>
             )}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -204,6 +231,26 @@ const ListActions = memo(function ListActions({ listId, onShowShareModal }: { li
             <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteList}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {t('common.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showDeleteCompletedDialog} onOpenChange={setShowDeleteCompletedDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('todos.deleteCompletedTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('todos.deleteCompletedDescription')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteCompleted.mutate()}
               className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
             >
               {t('common.delete')}
@@ -231,12 +278,10 @@ const ListMembers = memo(function ListMembers({ listId, onShowShareModal }: { li
   if (members.length === 0) return null
 
   return (
-    <div className="mt-3">
-      <AvatarStack
-        members={members}
-        onClick={onShowShareModal}
-      />
-    </div>
+    <AvatarStack
+      members={members}
+      onClick={onShowShareModal}
+    />
   )
 })
 
@@ -244,7 +289,15 @@ const ListMembers = memo(function ListMembers({ listId, onShowShareModal }: { li
 // Owns only showShareModal state — the one piece shared between actions and avatar stack.
 // No data hooks. Just layout + coordination.
 
-export const ListHeader = memo(function ListHeader({ listId }: { listId: string }) {
+export const ListHeader = memo(function ListHeader({
+  listId,
+  showAddButton,
+  onAddClick,
+}: {
+  listId: string
+  showAddButton?: boolean
+  onAddClick?: () => void
+}) {
   const { data: shareToken } = useSuspenseList(listId, { select: selectShareToken })
   const t = useTranslations()
   const [showShareModal, setShowShareModal] = useState(false)
@@ -252,7 +305,7 @@ export const ListHeader = memo(function ListHeader({ listId }: { listId: string 
 
   return (
     <>
-      <div className="mb-8">
+      <div>
         <div className="flex min-h-9 items-center">
           <Button
             variant="ghost"
@@ -271,9 +324,21 @@ export const ListHeader = memo(function ListHeader({ listId }: { listId: string 
           <ListActions listId={listId} onShowShareModal={handleShowShareModal} />
         </div>
 
-        <Suspense fallback={<ListMembersSkeleton />}>
-          <ListMembers listId={listId} onShowShareModal={handleShowShareModal} />
-        </Suspense>
+        <div className="mt-3 flex items-center">
+          <Suspense fallback={<ListMembersSkeleton />}>
+            <ListMembers listId={listId} onShowShareModal={handleShowShareModal} />
+          </Suspense>
+          {onAddClick && (
+            <Button
+              variant="ghost"
+              className={`ml-auto shrink-0 text-base text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50 ${showAddButton ? '' : 'invisible'}`}
+              onClick={onAddClick}
+            >
+              <Plus className="h-4 w-4" />
+              {t('todos.newTodo')}
+            </Button>
+          )}
+        </div>
       </div>
 
       <ShareModal
