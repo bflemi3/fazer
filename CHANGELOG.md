@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.10.0
+
+- Better install prompt with browser-specific instructions on iOS.
+- Update notifications now respect your language setting.
+
 ## v0.9.1
 
 - Fixed spacing in the header on the home page.

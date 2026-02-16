@@ -90,10 +90,16 @@
     "noAccess": "Esta lista não está disponível — ela pode não existir ou ter sido excluída",
     "you": "você"
   },
+  "update": {
+    "whatsNew": "Novidades na v{version}",
+    "viewPastUpdates": "Ver atualizações anteriores"
+  },
   "install": {
-    "description": "Adicione o app Fazer à sua tela inicial.",
-    "iosDescription": "Toque no botão de compartilhar e depois em \"Adicionar à Tela de Início\"",
-    "install": "Instalar",
-    "dismiss": "Dispensar"
+    "title": "Instalar Fazer",
+    "description": "Instale o Fazer para acesso rápido na tela inicial — funciona offline também.",
+    "iosSafariDescription": "Acesso rápido e suporte offline. No Safari, toque no ícone de compartilhar e depois \"Adicionar à Tela de Início\".",
+    "iosChromeDescription": "Acesso rápido e suporte offline. No Chrome, toque no menu (⋯) e depois \"Adicionar à Tela de Início\".",
+    "iosOtherDescription": "Acesso rápido e suporte offline. Use o menu do navegador para \"Adicionar à Tela de Início\".",
+    "install": "Instalar"
   }
 }

@@ -5,6 +5,7 @@ import { LocaleProvider } from "@/components/locale-provider";
 import { QueryProvider } from "@/components/query-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { SwUpdateNotifier } from "@/components/sw-update-notifier";
+import { InstallPrompt } from "@/components/install-prompt";
 import { PostHogAnalytics } from "@/components/posthog-provider";
 import "./globals.css";
 
@@ -57,9 +58,10 @@ export default function RootLayout({
             <PostHogAnalytics>
               <LocaleProvider>
                 {children}
+                <InstallPrompt />
+                <SwUpdateNotifier />
               </LocaleProvider>
               <Toaster />
-              <SwUpdateNotifier />
             </PostHogAnalytics>
           </QueryProvider>
         </ThemeProvider>
