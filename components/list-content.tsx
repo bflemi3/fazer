@@ -1,6 +1,7 @@
 'use client'
 
-import { Suspense, useState, useRef, useCallback } from 'react'
+import { Suspense, useState, useRef, useCallback, useEffect } from 'react'
+import posthog from 'posthog-js'
 import { TopBar } from './top-bar'
 import { ListHeader } from './list-header'
 import { TodoList } from './todo-list'
@@ -41,6 +42,15 @@ function TodoListSkeleton() {
 }
 
 export function ListContent({ list }: Props) {
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const fromShare = params.get('from_share')
+    if (fromShare) {
+      posthog.capture('share_link_visited', { list_id: list.id, share_token: fromShare })
+      window.history.replaceState({}, '', `/l/${list.id}`)
+    }
+  }, [list.id])
+
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const handleOpenCreateModal = useCallback(() => setIsCreateModalOpen(true), [])
 

@@ -1,6 +1,8 @@
 'use client'
 
+import { useEffect } from 'react'
 import Link from 'next/link'
+import posthog from 'posthog-js'
 import { useTranslations } from 'next-intl'
 import { useTodos } from '@/lib/hooks/use-todos'
 import { useList } from '@/lib/hooks/use-lists'
@@ -19,6 +21,12 @@ type Props = {
 
 export function SharedListContent({ list, ownerProfile, shareToken }: Props) {
   const t = useTranslations()
+
+  useEffect(() => {
+    posthog.capture('share_link_visited', { list_id: list.id, share_token: shareToken })
+    localStorage.setItem('fazer-referred-by-share', '1')
+  }, [list.id, shareToken])
+
   const { data: listData } = useList(list.id)
   const currentList = listData ?? list
   const { data: todos, isLoading } = useTodos(list.id)

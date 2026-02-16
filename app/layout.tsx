@@ -5,6 +5,7 @@ import { LocaleProvider } from "@/components/locale-provider";
 import { QueryProvider } from "@/components/query-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { SwUpdateNotifier } from "@/components/sw-update-notifier";
+import { PostHogAnalytics } from "@/components/posthog-provider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -53,12 +54,14 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <QueryProvider>
-            <LocaleProvider>
-              {children}
-            </LocaleProvider>
+            <PostHogAnalytics>
+              <LocaleProvider>
+                {children}
+              </LocaleProvider>
+              <Toaster />
+              <SwUpdateNotifier />
+            </PostHogAnalytics>
           </QueryProvider>
-          <Toaster />
-          <SwUpdateNotifier />
         </ThemeProvider>
       </body>
     </html>

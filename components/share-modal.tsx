@@ -1,6 +1,8 @@
 'use client'
 
+
 import { useState } from 'react'
+import posthog from 'posthog-js'
 import { useTranslations } from 'next-intl'
 import { Check, Copy, X } from 'lucide-react'
 import { useCollaborators, useRemoveCollaborator } from '@/lib/hooks/use-collaborators'
@@ -38,6 +40,7 @@ export function ShareModal({ listId, shareToken, open, onClose }: Props) {
 
   async function handleCopy() {
     await navigator.clipboard.writeText(shareUrl)
+    posthog.capture('share_link_copied', { list_id: listId })
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }

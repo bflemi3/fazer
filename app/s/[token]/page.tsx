@@ -24,7 +24,7 @@ export default async function SharedListPage({ params }: Props) {
       return <ShareNotFound />
     }
 
-    redirect(`/l/${listId}`)
+    redirect(`/l/${listId}?from_share=${token}`)
   }
 
   // Anonymous: fetch list by share_token (anon RLS policy allows SELECT)
