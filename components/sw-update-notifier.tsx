@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import Link from "next/link";
 
@@ -8,6 +9,8 @@ const version = process.env.NEXT_PUBLIC_APP_VERSION;
 const releaseNotes = process.env.NEXT_PUBLIC_RELEASE_NOTES;
 
 export function SwUpdateNotifier() {
+  const t = useTranslations();
+
   useEffect(() => {
     if (process.env.NODE_ENV === "development") return;
     if (!("serwist" in window) || !window.serwist) return;
@@ -20,7 +23,7 @@ export function SwUpdateNotifier() {
         .filter((line) => line.startsWith("- "))
         .map((line) => line.slice(2));
 
-      toast(`What's new in v${version}`, {
+      toast(t("update.whatsNew", { version: version ?? "" }), {
         duration: Infinity,
         description: (
           <div className="flex flex-col gap-2">
@@ -37,13 +40,13 @@ export function SwUpdateNotifier() {
               style={{ textDecorationSkipInk: "none" }}
               onClick={() => toast.dismiss()}
             >
-              View past updates
+              {t("update.viewPastUpdates")}
             </Link>
           </div>
         ),
       });
     });
-  }, []);
+  }, [t]);
 
   return null;
 }

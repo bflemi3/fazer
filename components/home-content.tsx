@@ -32,7 +32,6 @@ import { ListControls } from './list-controls'
 import { CreateListModal } from './create-list-modal'
 import { SortableListItem, DragOverlayContent } from './sortable-list-item'
 import { Hint } from './hint'
-import { InstallPrompt } from './install-prompt'
 // --- Skeletons ---
 
 function HomeGreetingSkeleton() {
@@ -115,7 +114,6 @@ const HomeHeaderControls = memo(function HomeHeaderControls({
         onSearchChange={onSearchChange}
         onCreateList={onCreateList}
       />
-      <InstallPrompt />
       <Hint storageKey="fazer-edit-hint-dismissed">
         {t('todos.editHint')}
       </Hint>

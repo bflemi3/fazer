@@ -90,10 +90,16 @@
     "noAccess": "That list isn't available — it may not exist or has been deleted",
     "you": "you"
   },
+  "update": {
+    "whatsNew": "What's new in v{version}",
+    "viewPastUpdates": "View past updates"
+  },
   "install": {
-    "description": "Add the Fazer app to your home screen.",
-    "iosDescription": "Tap the share button, then \"Add to Home Screen\"",
-    "install": "Install",
-    "dismiss": "Dismiss"
+    "title": "Install Fazer",
+    "description": "Install Fazer for quick access from your home screen — works offline too.",
+    "iosSafariDescription": "Get quick access and offline support. In Safari, tap the share icon then \"Add to Home Screen\".",
+    "iosChromeDescription": "Get quick access and offline support. In Chrome, tap the menu (⋯) then \"Add to Home Screen\".",
+    "iosOtherDescription": "Get quick access and offline support. Use your browser menu to \"Add to Home Screen\".",
+    "install": "Install"
   }
 }
