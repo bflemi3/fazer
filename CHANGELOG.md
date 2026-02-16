@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.9.1
+
+- Fixed spacing in the header on the home page.
+
 ## v0.9.0
 
 - Basic analytics to help us understand how sharing and sign-ups are working.
