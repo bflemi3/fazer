@@ -73,7 +73,7 @@ function HomeGreeting() {
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           {t('auth.welcomeBack')}, {firstName}
         </h1>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">
           {t('lists.title')}
         </p>
       </div>
@@ -110,6 +110,7 @@ const HomeHeaderControls = memo(function HomeHeaderControls({
   return (
     <>
       <ListControls
+        className="mb-4"
         searchQuery={searchQuery}
         onSearchChange={onSearchChange}
         onCreateList={onCreateList}
@@ -266,7 +267,7 @@ export function HomeContent() {
       />
 
       {/* Sticky header */}
-      <div className="sticky top-0 z-40 bg-zinc-50 px-4 pt-4 pb-4 dark:bg-zinc-950">
+      <div className="sticky flex flex-col gap-2 top-0 z-40 bg-zinc-50 px-4 pt-4 pb-4 dark:bg-zinc-950">
         <Suspense fallback={<HomeGreetingSkeleton />}>
           <HomeGreeting />
         </Suspense>

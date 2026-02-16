@@ -5,14 +5,17 @@ import { Plus, Search } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { cn } from '@/lib/utils'
 
 type Props = {
+  className?: string
   searchQuery: string
   onSearchChange: (query: string) => void
   onCreateList: () => void
 }
 
 export const ListControls = memo(function ListControls({
+  className,
   searchQuery,
   onSearchChange,
   onCreateList,
@@ -20,7 +23,7 @@ export const ListControls = memo(function ListControls({
   const t = useTranslations()
 
   return (
-    <div className="mb-4 flex items-center justify-between gap-2">
+    <div className={cn('flex items-center justify-between gap-2', className)}>
       <Button variant="outline" className="text-base" onClick={onCreateList}>
         <Plus className="h-4 w-4" />
         {t('lists.newList')}
