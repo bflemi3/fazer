@@ -18,8 +18,8 @@ function PostHogInit() {
     posthog.init(POSTHOG_KEY, {
       api_host: POSTHOG_HOST,
       autocapture: false,
-      capture_pageview: false,
-      capture_pageleave: false,
+      capture_pageview: true,
+      capture_pageleave: true,
     })
   }, [])
 
