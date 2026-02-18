@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.10.1
+
+- Analytics now tracks page views and exits to help us understand how people use Fazer.
+
 ## v0.10.0
 
 - Better install prompt with browser-specific instructions on iOS.
