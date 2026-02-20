@@ -12,6 +12,16 @@ A collaborative todo list app with real-time updates.
 - **PWA:** Installable with offline support (Serwist)
 - **i18n:** next-intl (English, Portuguese)
 
+## Infrastructure
+
+- **Hosting:** [Vercel](https://vercel.com) — deploys automatically from `main` via GitHub integration
+- **Database & Auth:** [Supabase](https://supabase.com) (managed Postgres) — handles user authentication (Google OAuth), row-level security, and real-time subscriptions over WebSockets
+- **Feedback:** Slack Bot Token posts user feedback (with optional screenshots) to a private Slack channel via the Slack Web API
+- **Analytics:** [PostHog](https://posthog.com) — lightweight, privacy-conscious event tracking (optional, no-ops when unconfigured)
+- **DNS/Domain:** Managed through Vercel
+
+All secrets (Supabase keys, Slack token, PostHog key) are stored as environment variables in Vercel and never exposed to the client unless prefixed with `NEXT_PUBLIC_`.
+
 ## Getting started
 
 ```bash
