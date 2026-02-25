@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.0.0
+
+- Send us feedback right from the app — report bugs, request features, or share thoughts.
+- Screenshots are automatically captured with your feedback to help us understand issues faster.
+- All modals now slide up as a drawer on mobile for a smoother, more native feel.
+- The + button in the header now adds items or lists depending on the page — fewer buttons, simpler flow.
+- Tapping outside the new item input saves and closes it automatically.
+- Refreshed app icon with better centering.
+- The login page now shows the Fazer icon with a subtle entrance animation.
+- Improved translations across the app.
+
 ## v0.10.1
 
 - Analytics now tracks page views and exits to help us understand how people use Fazer.
