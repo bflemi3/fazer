@@ -217,9 +217,10 @@ npm run lint      # Run ESLint
 
 ## Versioning & releases
 
-- Use **semantic versioning** (`0.MINOR.PATCH` while pre-1.0).
-  - `0.MINOR.0` — new features (e.g., PWA support, offline sync)
-  - `0.x.PATCH` — bug fixes, small improvements
+- Use **semantic versioning** (`MAJOR.MINOR.PATCH`).
+  - `MAJOR` — breaking or milestone releases
+  - `MINOR` — new features
+  - `PATCH` — bug fixes, small improvements
 - Create a **GitHub Release** for each feature PR merged to `main`.
 - Workflow after merging a feature PR:
   1. If there are new Supabase migrations, push them to production: `npx supabase db push --linked`
@@ -243,16 +244,10 @@ npm run lint      # Run ESLint
 
 ---
 
-## Completed items management (planned)
+## Completed items management (complete — v0.8.0)
 
-- Completed todos should be **hidden by default** to keep long lists clean.
-- Provide a way to reveal completed items (e.g., expandable "N completed" section).
-- Users should be able to:
-  - View completed items
-  - Uncomplete individual items (move them back to the active list)
-  - Uncomplete all completed items at once
-  - Delete all completed items at once
-- Details TBD — discuss UX approach when implementing.
+- Completed todos are hidden by default behind a collapsible "N completed" section.
+- Users can uncomplete individual items, uncomplete all, or delete all completed items.
 
 ---
 
@@ -262,73 +257,74 @@ npm run lint      # Run ESLint
 
 ---
 
-## Feedback (planned)
+## Feedback (complete — v1.0.0)
 
-Authenticated users can submit feedback directly from the app. Feedback is sent to the Fazer Slack workspace `#feedback` channel via an incoming webhook.
+Authenticated users can submit feedback directly from the app. Feedback is sent to the Fazer Slack workspace `#feedback` channel via the Slack Bot API.
 
 ### What gets captured
 
 **User-provided:**
 - **Type** — bug, feature request, or general (picker, not free text)
 - **Message** — free-form text description
-- **Screenshot** — optional image attachment
+- **Screenshot** — optional auto-captured page screenshot (via `html-to-image`, excludes the feedback modal)
 
 **Auto-captured (no user effort):**
-- Current route (e.g., `/l/abc123`)
-- App version (`NEXT_PUBLIC_APP_VERSION`)
-- User identity (name + email from auth)
-- Device context (viewport size + user agent)
-- Timestamp (UTC)
-- Online/offline status
-
-### Slack message format
-
-Format for quick scanning — type emoji as header, user info, context block, then message:
-
-```
-🐛 Bug Report from Jane Doe (jane@example.com)
-───────────────────────────
-Page: /l/abc123
-Version: 0.10.1 • Mobile (375×812) • Safari
-Status: Online
-
-"When I check off an item it doesn't sync to my other device"
-
-📎 [screenshot attached]
-```
-
-Type emojis: 🐛 Bug Report, 💡 Feature Request, 💬 General Feedback
+- Current route, app version, user identity, device context, timestamp, online/offline status
 
 ### How feedback is surfaced to users
 
-Three touchpoints, from least to most prominent:
-
-1. **Fixed footer** — a persistent, fixed footer at the bottom of every page with the text *"Got a thought? We'd love to hear it."* styled in `text-muted-foreground` at small size. Tapping opens the feedback form. All page content must account for the footer height (padding/margin) so scrolling is unaffected.
-
-2. **Contextual "Report this" on errors** — when sync fails or errors occur, include a "Report this issue" link in the error toast. Pre-fills the feedback type as "bug" and auto-captures error context.
-
-3. **One-time nudge** — after the user's 5th session, show a single toast: *"How's Fazer working for you? Share feedback."* Once dismissed, never shown again (tracked in localStorage).
-
-### Feedback form
-
-- Opens as a **bottom drawer on mobile / modal on desktop** (per the responsive modal pattern).
-- Fields: type picker, message textarea, optional screenshot upload.
-- Authenticated users only — the form should not be accessible or visible to anonymous users.
-- Submit sends to Slack via a Next.js API route that calls the Slack incoming webhook.
-- Show a brief confirmation toast on success.
+1. **Fixed footer** — persistent footer on every page: *"Got a thought? We'd love to hear it."* Opens feedback form.
+2. **Contextual "Report this" on errors** — link in error page pre-fills feedback type as "bug".
+3. **One-time nudge** — after the user's 5th session, a toast: *"How's Fazer working for you?"* (tracked in localStorage, shown once).
 
 ### Integration
 
-- **Slack incoming webhook URL** stored as an environment variable (`SLACK_FEEDBACK_WEBHOOK_URL`), never exposed to the client.
-- **API route** at `/api/feedback` — accepts the form data, attaches auto-captured context, and posts to Slack.
-- Rate limit: reasonable throttle to prevent abuse (e.g., max 5 submissions per hour per user).
+- **Slack Bot Token** (`SLACK_BOT_TOKEN`) and **Channel ID** (`SLACK_FEEDBACK_CHANNEL_ID`) stored as environment variables, never exposed to the client.
+- **API route** at `/api/feedback` — accepts form data, attaches auto-captured context, posts to Slack via Bot API (with screenshot upload support).
+- Rate limit: max 5 submissions per hour per user.
 
 ---
 
-## Analytics (non-MVP)
+## Analytics (complete — v0.9.0)
 
-- Add basic, privacy-conscious product analytics after MVP.
-- Prefer a lightweight approach with event tracking (e.g., PostHog).
-- Do not block MVP on analytics.
-- Track only essential events (auth, list/item actions, share usage).
-- Avoid collecting sensitive content (e.g., full todo text) in analytics events.
+- PostHog for privacy-conscious product analytics.
+- Tracks page views, page leaves, and essential events (auth, list/item actions, share usage).
+- Does not collect sensitive content (e.g., full todo text).
+
+---
+
+## Native apps (future consideration)
+
+Publish Fazer as native iOS and Android apps to gain App Store/Play Store presence, native push notifications, and voice assistant integration.
+
+### Recommended approach
+
+- **React Native (Expo)** — best fit given existing TypeScript/React stack.
+- **Monorepo** (Turborepo) with shared packages for types, Supabase client, business logic, and validation.
+- ~30-40% code reuse from the web app (logic layer, not UI layer).
+- UI components must be rewritten (React Native uses `View`/`Text`/`FlatList`, not HTML/CSS).
+
+### Estimated timeline
+
+~2-3 weeks with Claude Code (~8-10 weeks without). The dev work compresses significantly; the fixed overhead is Apple review, device testing, and store provisioning.
+
+### Voice assistant integration (unlocked by native apps)
+
+| Assistant | What's needed | Effort |
+|---|---|---|
+| Alexa | Server-side Skill (API endpoint) — no native app required | Low |
+| Google Assistant | Android App Actions + `shortcuts.xml` native module | Low-moderate |
+| Siri | Swift Intents Extension (runs outside main RN app process) | Moderate |
+
+### When to pursue
+
+- When App Store discoverability matters for growth.
+- When native push notifications are needed for engagement.
+- When voice assistant integration becomes a user priority.
+- Not urgent while the PWA covers mobile use cases well.
+
+### Costs
+
+- Apple Developer Program: $99/year
+- Google Play Developer: $25 one-time
+- Expo EAS Build: free tier likely sufficient
