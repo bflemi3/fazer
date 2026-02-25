@@ -4,6 +4,7 @@ import { memo, useMemo } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { GripVertical } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useSuspenseTodos } from '@/lib/hooks/use-todos'
 import { TodoItem } from './todo-item'
 import type { Todo } from '@/lib/hooks/use-todos'
@@ -17,6 +18,7 @@ export const SortableTodoItem = memo(function SortableTodoItem({
   todoId,
   listId,
 }: Props) {
+  const t = useTranslations()
   const { data: todos } = useSuspenseTodos(listId)
   const todo = useMemo(() => todos.find((t) => t.id === todoId), [todos, todoId])
 
@@ -51,7 +53,7 @@ export const SortableTodoItem = memo(function SortableTodoItem({
         className="flex shrink-0 cursor-grab items-center justify-center text-zinc-400 hover:text-zinc-600 active:cursor-grabbing dark:text-zinc-500 dark:hover:text-zinc-300"
         style={{ touchAction: 'none' }}
         tabIndex={0}
-        aria-label="Drag to reorder"
+        aria-label={t('common.dragToReorder')}
       >
         <GripVertical className="h-5 w-5" />
       </button>

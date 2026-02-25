@@ -5,11 +5,11 @@ import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useCreateList, useLists } from '@/lib/hooks/use-lists'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+  ResponsiveModal,
+  ResponsiveModalHeader,
+  ResponsiveModalTitle,
+  ResponsiveModalBody,
+} from '@/components/ui/responsive-modal'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
@@ -44,12 +44,12 @@ export const CreateListModal = memo(function CreateListModal({ open, onClose }: 
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{t('lists.newList')}</DialogTitle>
-        </DialogHeader>
+    <ResponsiveModal open={open} onOpenChange={handleOpenChange}>
+      <ResponsiveModalHeader>
+        <ResponsiveModalTitle>{t('lists.newList')}</ResponsiveModalTitle>
+      </ResponsiveModalHeader>
 
+      <ResponsiveModalBody>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             autoFocus
@@ -66,7 +66,7 @@ export const CreateListModal = memo(function CreateListModal({ open, onClose }: 
             </Button>
           </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveModalBody>
+    </ResponsiveModal>
   )
 })

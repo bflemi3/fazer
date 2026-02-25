@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useRef, useEffect, useCallback, memo } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, MoreHorizontal, Plus, Trash2, Share2, ListChecks, RotateCcw } from 'lucide-react'
+import { ArrowLeft, MoreHorizontal, Trash2, Share2, ListChecks, RotateCcw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useSuspenseList, useRenameList, useDeleteList } from '@/lib/hooks/use-lists'
@@ -291,12 +291,8 @@ const ListMembers = memo(function ListMembers({ listId, onShowShareModal }: { li
 
 export const ListHeader = memo(function ListHeader({
   listId,
-  showAddButton,
-  onAddClick,
 }: {
   listId: string
-  showAddButton?: boolean
-  onAddClick?: () => void
 }) {
   const { data: shareToken } = useSuspenseList(listId, { select: selectShareToken })
   const t = useTranslations()
@@ -324,20 +320,10 @@ export const ListHeader = memo(function ListHeader({
           <ListActions listId={listId} onShowShareModal={handleShowShareModal} />
         </div>
 
-        <div className="mt-3 flex items-center">
+        <div className="mt-2 flex items-center">
           <Suspense fallback={<ListMembersSkeleton />}>
             <ListMembers listId={listId} onShowShareModal={handleShowShareModal} />
           </Suspense>
-          {onAddClick && (
-            <Button
-              variant="ghost"
-              className={`ml-auto shrink-0 text-base text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50 ${showAddButton ? '' : 'invisible'}`}
-              onClick={onAddClick}
-            >
-              <Plus className="h-4 w-4" />
-              {t('todos.newTodo')}
-            </Button>
-          )}
         </div>
       </div>
 

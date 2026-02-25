@@ -25,7 +25,7 @@ function createFSvg(size, padding = 0) {
   const midWidth = usable * 0.30;
 
   // Top-left of the F bounding box (centered in usable area)
-  const fx = cx - fWidth * 0.38;
+  const fx = cx - fWidth * 0.15;
   const fy = cy - fHeight / 2;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
@@ -54,7 +54,7 @@ function createFSvgMaskable(size) {
   const fWidth = usable * 0.38;
   const midWidth = usable * 0.30;
 
-  const fx = cx - fWidth * 0.38;
+  const fx = cx - fWidth * 0.15;
   const fy = cy - fHeight / 2;
 
   // Maskable: no rounded corners on background (OS applies its own mask)

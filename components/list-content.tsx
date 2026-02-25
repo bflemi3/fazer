@@ -1,11 +1,10 @@
 'use client'
 
-import { Suspense, useState, useRef, useCallback, useEffect } from 'react'
+import { Suspense, useRef, useCallback, useEffect } from 'react'
 import posthog from 'posthog-js'
 import { TopBar } from './top-bar'
 import { ListHeader } from './list-header'
 import { TodoList } from './todo-list'
-import { CreateListModal } from './create-list-modal'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { Tables } from '@/supabase/database.types'
 
@@ -26,6 +25,11 @@ function ListHeaderSkeleton() {
         <div className="flex shrink-0 items-center gap-1">
           <Skeleton className="h-9 w-9" />
         </div>
+      </div>
+      {/* Members row */}
+      <div className="mt-2 flex -space-x-2">
+        <Skeleton className="size-6 rounded-full" />
+        <Skeleton className="size-6 rounded-full" />
       </div>
     </div>
   )
@@ -51,41 +55,26 @@ export function ListContent({ list }: Props) {
     }
   }, [list.id])
 
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const handleOpenCreateModal = useCallback(() => setIsCreateModalOpen(true), [])
-
-  const [isBottomVisible, setIsBottomVisible] = useState(true)
   const triggerCreateRef = useRef<(() => void) | null>(null)
-  const handleBottomVisibilityChange = useCallback((visible: boolean) => setIsBottomVisible(visible), [])
   const handleAddClick = useCallback(() => triggerCreateRef.current?.(), [])
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-      <TopBar onCreateList={handleOpenCreateModal} />
-
-      <CreateListModal
-        open={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-      />
+      <TopBar onPlusClick={handleAddClick} />
 
       {/* Sticky header */}
-      <div className="sticky top-0 z-40 bg-zinc-50 px-4 pt-4 pb-4 dark:bg-zinc-950">
+      <div className="sticky top-0 z-40 bg-zinc-50 px-4 pt-4 pb-6 dark:bg-zinc-950">
         <Suspense fallback={<ListHeaderSkeleton />}>
-          <ListHeader
-            listId={list.id}
-            showAddButton={!isBottomVisible}
-            onAddClick={handleAddClick}
-          />
+          <ListHeader listId={list.id} />
         </Suspense>
       </div>
 
       {/* Scrollable content */}
-      <div className="px-4 pb-8">
+      <div className="px-4 pb-20">
         <Suspense fallback={<TodoListSkeleton />}>
           <TodoList
             listId={list.id}
             triggerCreateRef={triggerCreateRef}
-            onBottomVisibilityChange={handleBottomVisibilityChange}
           />
         </Suspense>
       </div>

@@ -2,11 +2,13 @@
 
 import { useState } from 'react'
 import { Settings } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { SettingsModal } from './settings-modal'
 import { Button } from '@/components/ui/button'
 
 export function SettingsButton() {
   const [open, setOpen] = useState(false)
+  const t = useTranslations()
 
   return (
     <>
@@ -14,7 +16,7 @@ export function SettingsButton() {
         variant="outline"
         size="icon"
         onClick={() => setOpen(true)}
-        aria-label="Settings"
+        aria-label={t('common.settings')}
       >
         <Settings className="h-4 w-4" />
       </Button>

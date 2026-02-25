@@ -1,9 +1,11 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import posthog from 'posthog-js'
 import { Button } from '@/components/ui/button'
+import { FeedbackModal } from '@/components/feedback-modal'
 
 export default function Error({
   error,
@@ -12,13 +14,18 @@ export default function Error({
   error: Error & { digest?: string }
   reset: () => void
 }) {
+  const t = useTranslations()
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
+  const handleOpenFeedback = useCallback(() => setFeedbackOpen(true), [])
+  const handleCloseFeedback = useCallback(() => setFeedbackOpen(false), [])
+
   useEffect(() => {
     posthog.capture('$exception', {
       $exception_message: error.message,
       $exception_source: 'error_boundary',
     })
   }, [error])
-  
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 dark:bg-zinc-950">
       <div className="w-full max-w-sm text-center">
@@ -33,12 +40,23 @@ export default function Error({
           Fazer
         </h1>
         <p className="mt-4 text-base text-zinc-600 dark:text-zinc-400">
-          Something didn't load right. Give it another shot, or refresh the page if it keeps happening.
+          {t('error.description')}
         </p>
-        <Button variant="outline" className="mt-6" onClick={reset}>
-          Try again
-        </Button>
+        <div className="mt-6 flex flex-col items-center gap-2">
+          <Button variant="outline" onClick={reset}>
+            {t('common.tryAgain')}
+          </Button>
+          <Button variant="ghost" size="sm" onClick={handleOpenFeedback}>
+            {t('feedback.reportThis')}
+          </Button>
+        </div>
       </div>
+
+      <FeedbackModal
+        open={feedbackOpen}
+        onClose={handleCloseFeedback}
+        defaultType="bug"
+      />
     </div>
   )
 }

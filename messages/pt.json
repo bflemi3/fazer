@@ -8,7 +8,9 @@
     "rename": "Renomear",
     "create": "Criar",
     "share": "Compartilhar",
-    "dragToReorder": "Arrastar para reordenar"
+    "dragToReorder": "Arrastar para reordenar",
+    "back": "Voltar",
+    "tryAgain": "Tentar novamente"
   },
   "auth": {
     "welcome": "Bem-vindo ao Fazer",
@@ -101,5 +103,33 @@
     "iosChromeDescription": "Acesso rápido e suporte offline. No Chrome, toque no menu (⋯) e depois \"Adicionar à Tela de Início\".",
     "iosOtherDescription": "Acesso rápido e suporte offline. Use o menu do navegador para \"Adicionar à Tela de Início\".",
     "install": "Instalar"
+  },
+  "error": {
+    "description": "Algo não carregou corretamente. Tente novamente, ou atualize a página se o problema persistir."
+  },
+  "offline": {
+    "title": "Você está offline",
+    "description": "Verifique sua conexão e tente novamente."
+  },
+  "feedback": {
+    "title": "Enviar feedback",
+    "description": "Ajude-nos a melhorar o Fazer compartilhando suas ideias.",
+    "footerCta": "Tem algo em mente? Adoraríamos ouvir.",
+    "type": {
+      "bug": "Bug",
+      "feature": "Recurso",
+      "general": "Geral"
+    },
+    "messagePlaceholder": "Conte-nos o que está pensando...",
+    "includeScreenshot": "Incluir captura de tela",
+    "screenshotCaptureFailed": "Não foi possível capturar a tela.",
+    "submit": "Enviar feedback",
+    "submitting": "Enviando...",
+    "submitSuccess": "Obrigado pelo seu feedback!",
+    "submitError": "Algo deu errado. Tente novamente.",
+    "rateLimited": "Você enviou muitas mensagens. Aguarde alguns minutos.",
+    "nudgeMessage": "Como o Fazer está funcionando para você?",
+    "nudgeAction": "Compartilhar feedback",
+    "reportThis": "Reportar este problema"
   }
 }

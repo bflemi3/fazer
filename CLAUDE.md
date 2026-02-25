@@ -49,6 +49,10 @@
 - Default to the user’s system color scheme.
 - UI should feel fast, unobtrusive, and predictable.
 
+### Responsive modal pattern
+
+All modal-style interactions must use **bottom drawer on mobile** and **centered modal on desktop**. Use shadcn/ui `Drawer` (Vaul) for mobile and `Dialog` for desktop, with a responsive wrapper that switches based on viewport. This applies to all existing and new modals (settings, share, create list, feedback, etc.).
+
 ### Theme colors
 
 - **Brand color:** Electric Violet `#8B5CF6` — used for PWA theme, manifest, icons
@@ -255,6 +259,69 @@ npm run lint      # Run ESLint
 ## Owner avatar on shared lists (complete — v0.7.2)
 
 - On the home page, any list created by another user displays the **owner's avatar** to the left of the menu button so users can distinguish their own lists from shared ones.
+
+---
+
+## Feedback (planned)
+
+Authenticated users can submit feedback directly from the app. Feedback is sent to the Fazer Slack workspace `#feedback` channel via an incoming webhook.
+
+### What gets captured
+
+**User-provided:**
+- **Type** — bug, feature request, or general (picker, not free text)
+- **Message** — free-form text description
+- **Screenshot** — optional image attachment
+
+**Auto-captured (no user effort):**
+- Current route (e.g., `/l/abc123`)
+- App version (`NEXT_PUBLIC_APP_VERSION`)
+- User identity (name + email from auth)
+- Device context (viewport size + user agent)
+- Timestamp (UTC)
+- Online/offline status
+
+### Slack message format
+
+Format for quick scanning — type emoji as header, user info, context block, then message:
+
+```
+🐛 Bug Report from Jane Doe (jane@example.com)
+───────────────────────────
+Page: /l/abc123
+Version: 0.10.1 • Mobile (375×812) • Safari
+Status: Online
+
+"When I check off an item it doesn't sync to my other device"
+
+📎 [screenshot attached]
+```
+
+Type emojis: 🐛 Bug Report, 💡 Feature Request, 💬 General Feedback
+
+### How feedback is surfaced to users
+
+Three touchpoints, from least to most prominent:
+
+1. **Fixed footer** — a persistent, fixed footer at the bottom of every page with the text *"Got a thought? We'd love to hear it."* styled in `text-muted-foreground` at small size. Tapping opens the feedback form. All page content must account for the footer height (padding/margin) so scrolling is unaffected.
+
+2. **Contextual "Report this" on errors** — when sync fails or errors occur, include a "Report this issue" link in the error toast. Pre-fills the feedback type as "bug" and auto-captures error context.
+
+3. **One-time nudge** — after the user's 5th session, show a single toast: *"How's Fazer working for you? Share feedback."* Once dismissed, never shown again (tracked in localStorage).
+
+### Feedback form
+
+- Opens as a **bottom drawer on mobile / modal on desktop** (per the responsive modal pattern).
+- Fields: type picker, message textarea, optional screenshot upload.
+- Authenticated users only — the form should not be accessible or visible to anonymous users.
+- Submit sends to Slack via a Next.js API route that calls the Slack incoming webhook.
+- Show a brief confirmation toast on success.
+
+### Integration
+
+- **Slack incoming webhook URL** stored as an environment variable (`SLACK_FEEDBACK_WEBHOOK_URL`), never exposed to the client.
+- **API route** at `/api/feedback` — accepts the form data, attaches auto-captured context, and posts to Slack.
+- Rate limit: reasonable throttle to prevent abuse (e.g., max 5 submissions per hour per user).
 
 ---
 
