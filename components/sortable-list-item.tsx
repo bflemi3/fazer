@@ -4,6 +4,7 @@ import { memo } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { GripVertical } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { ListItem } from './list-item'
 
 type Props = {
@@ -15,6 +16,7 @@ export const SortableListItem = memo(function SortableListItem({
   listId,
   disabled,
 }: Props) {
+  const t = useTranslations()
   const {
     attributes,
     listeners,
@@ -45,7 +47,7 @@ export const SortableListItem = memo(function SortableListItem({
           className="flex shrink-0 cursor-grab items-center justify-center text-zinc-400 hover:text-zinc-600 active:cursor-grabbing dark:text-zinc-500 dark:hover:text-zinc-300"
           style={{ touchAction: 'none' }}
           tabIndex={0}
-          aria-label="Drag to reorder"
+          aria-label={t('common.dragToReorder')}
         >
           <GripVertical className="h-5 w-5" />
         </button>

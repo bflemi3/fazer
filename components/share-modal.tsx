@@ -10,11 +10,11 @@ import { useProfile } from '@/lib/hooks/use-profile'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+  ResponsiveModal,
+  ResponsiveModalHeader,
+  ResponsiveModalTitle,
+  ResponsiveModalBody,
+} from '@/components/ui/responsive-modal'
 import { UserAvatar } from './user-avatar'
 
 type Props = {
@@ -46,80 +46,78 @@ export function ShareModal({ listId, shareToken, open, onClose }: Props) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{t('title')}</DialogTitle>
-        </DialogHeader>
+    <ResponsiveModal open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <ResponsiveModalHeader>
+        <ResponsiveModalTitle>{t('title')}</ResponsiveModalTitle>
+      </ResponsiveModalHeader>
 
-        <div className="space-y-6">
-          {/* Share link */}
-          <div className="flex gap-2">
-            <Input
-              readOnly
-              value={shareUrl}
-              className="flex-1"
-              onClick={(e) => (e.target as HTMLInputElement).select()}
-            />
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleCopy}
-              className="shrink-0"
-            >
-              {copied ? (
-                <Check className="h-4 w-4 text-green-600" />
-              ) : (
-                <Copy className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
+      <ResponsiveModalBody className="space-y-6">
+        {/* Share link */}
+        <div className="flex gap-2">
+          <Input
+            readOnly
+            value={shareUrl}
+            className="flex-1"
+            onClick={(e) => (e.target as HTMLInputElement).select()}
+          />
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleCopy}
+            className="shrink-0"
+          >
+            {copied ? (
+              <Check className="h-4 w-4 text-green-600" />
+            ) : (
+              <Copy className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
 
-          {/* People with access */}
-          {members && members.length > 0 && (
-            <div>
-              <h3 className="mb-3 text-sm font-medium text-zinc-900 dark:text-zinc-50">
-                {t('peopleWithAccess')}
-              </h3>
-              <div className="space-y-2">
-                {members.map((member) => (
-                  <div key={member.id} className="flex items-center gap-3">
-                    <UserAvatar
-                      displayName={member.display_name}
-                      avatarUrl={member.avatar_url}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-50">
-                        {member.display_name || member.email}
-                        {member.id === currentUserId && (
-                          <span className="ml-1 font-normal text-zinc-500 dark:text-zinc-400">
-                            ({t('you')})
-                          </span>
-                        )}
-                      </p>
-                      {member.role === 'owner' && (
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                          {t('owner')}
-                        </p>
+        {/* People with access */}
+        {members && members.length > 0 && (
+          <div>
+            <h3 className="mb-3 text-sm font-medium text-zinc-900 dark:text-zinc-50">
+              {t('peopleWithAccess')}
+            </h3>
+            <div className="space-y-2">
+              {members.map((member) => (
+                <div key={member.id} className="flex items-center gap-3">
+                  <UserAvatar
+                    displayName={member.display_name}
+                    avatarUrl={member.avatar_url}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                      {member.display_name || member.email}
+                      {member.id === currentUserId && (
+                        <span className="ml-1 font-normal text-zinc-500 dark:text-zinc-400">
+                          ({t('you')})
+                        </span>
                       )}
-                    </div>
-                    {isOwner && member.role === 'collaborator' && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="shrink-0 text-zinc-400 hover:text-red-600 dark:text-zinc-500 dark:hover:text-red-400"
-                        onClick={() => removeCollaborator.mutate({ listId, userId: member.id })}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
+                    </p>
+                    {member.role === 'owner' && (
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                        {t('owner')}
+                      </p>
                     )}
                   </div>
-                ))}
-              </div>
+                  {isOwner && member.role === 'collaborator' && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0 text-zinc-400 hover:text-red-600 dark:text-zinc-500 dark:hover:text-red-400"
+                      onClick={() => removeCollaborator.mutate({ listId, userId: member.id })}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
             </div>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
+          </div>
+        )}
+      </ResponsiveModalBody>
+    </ResponsiveModal>
   )
 }

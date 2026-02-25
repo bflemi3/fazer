@@ -170,10 +170,9 @@ const CompletedTodoList = memo(function CompletedTodoList({ listId }: { listId: 
 type TodoListProps = {
   listId: string
   triggerCreateRef?: React.MutableRefObject<(() => void) | null>
-  onBottomVisibilityChange?: (visible: boolean) => void
 }
 
-export function TodoList({ listId, triggerCreateRef, onBottomVisibilityChange }: TodoListProps) {
+export function TodoList({ listId, triggerCreateRef }: TodoListProps) {
   const { data: totalCount } = useSuspenseTodos(listId, { select: selectTotalCount })
   const t = useTranslations()
 
@@ -190,26 +189,12 @@ export function TodoList({ listId, triggerCreateRef, onBottomVisibilityChange }:
   const [isCreating, setIsCreating] = useState(false)
   const [newTodoTitle, setNewTodoTitle] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
-  const bottomAreaRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (isCreating && inputRef.current) {
       inputRef.current.focus()
     }
   }, [isCreating])
-
-  // Track whether the bottom button/input area is visible
-  useEffect(() => {
-    const el = bottomAreaRef.current
-    if (!el || !onBottomVisibilityChange) return
-
-    const observer = new IntersectionObserver(
-      ([entry]) => onBottomVisibilityChange(entry.isIntersecting),
-      { threshold: 0 }
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [onBottomVisibilityChange])
 
   const handleStartCreating = useCallback(() => {
     setIsCreating(true)
@@ -246,6 +231,15 @@ export function TodoList({ listId, triggerCreateRef, onBottomVisibilityChange }:
     }, 50)
   }
 
+  function handleBlur() {
+    const title = newTodoTitle.trim()
+    if (title) {
+      handleCreateTodo()
+    }
+    setIsCreating(false)
+    setNewTodoTitle('')
+  }
+
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'Enter') {
       e.preventDefault()
@@ -266,7 +260,7 @@ export function TodoList({ listId, triggerCreateRef, onBottomVisibilityChange }:
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
           {t('todos.emptyDescription')}
         </p>
-        <Button className="mt-6" onClick={() => setIsCreating(true)}>
+        <Button className="mt-6" onClick={handleStartCreating}>
           <Plus className="h-4 w-4" />
           {t('todos.newTodo')}
         </Button>
@@ -278,37 +272,23 @@ export function TodoList({ listId, triggerCreateRef, onBottomVisibilityChange }:
     <div className="space-y-4">
       <IncompleteTodoList listId={listId} />
 
-      {/* Bottom button/input area — observed for visibility */}
-      <div ref={bottomAreaRef}>
-        {/* Inline create input */}
-        {isCreating && (
-          <div className="space-y-2">
-            <Input
-              ref={inputRef}
-              value={newTodoTitle}
-              onChange={(e) => setNewTodoTitle(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={t('todos.newTodoPlaceholder')}
-              className="bg-white dark:bg-zinc-900"
-            />
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              {t('todos.createHint')}
-            </p>
-          </div>
-        )}
-
-        {/* Add button when not creating */}
-        {!isCreating && (
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-base text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
-            onClick={handleStartCreating}
-          >
-            <Plus className="h-4 w-4" />
-            {t('todos.newTodo')}
-          </Button>
-        )}
-      </div>
+      {/* Inline create input */}
+      {isCreating && (
+        <div className="space-y-2">
+          <Input
+            ref={inputRef}
+            value={newTodoTitle}
+            onChange={(e) => setNewTodoTitle(e.target.value)}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            placeholder={t('todos.newTodoPlaceholder')}
+            className="bg-white dark:bg-zinc-900"
+          />
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            {t('todos.createHint')}
+          </p>
+        </div>
+      )}
 
       <CompletedTodoList listId={listId} />
     </div>

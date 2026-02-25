@@ -47,15 +47,10 @@ function HomeGreetingSkeleton() {
 
 function HomeListsSkeleton() {
   return (
-    <div>
-      {/* List controls bar placeholder */}
-      <Skeleton className="mb-4 h-10 w-full rounded-md" />
-      {/* List item placeholders */}
-      <div className="space-y-2">
-        <Skeleton className="h-[72px] w-full rounded-lg" />
-        <Skeleton className="h-[72px] w-full rounded-lg" />
-        <Skeleton className="h-[72px] w-full rounded-lg" />
-      </div>
+    <div className="space-y-2">
+      <Skeleton className="h-[72px] w-full rounded-lg" />
+      <Skeleton className="h-[72px] w-full rounded-lg" />
+      <Skeleton className="h-[72px] w-full rounded-lg" />
     </div>
   )
 }
@@ -95,11 +90,9 @@ const selectHasLists = (lists: unknown[]) => lists.length > 0
 const HomeHeaderControls = memo(function HomeHeaderControls({
   searchQuery,
   onSearchChange,
-  onCreateList,
 }: {
   searchQuery: string
   onSearchChange: (query: string) => void
-  onCreateList: () => void
 }) {
   const t = useTranslations()
   const { data: hasLists } = useSuspenseLists({ select: selectHasLists })
@@ -109,10 +102,9 @@ const HomeHeaderControls = memo(function HomeHeaderControls({
   return (
     <>
       <ListControls
-        className="mb-4"
+        className=""
         searchQuery={searchQuery}
         onSearchChange={onSearchChange}
-        onCreateList={onCreateList}
       />
       <Hint storageKey="fazer-edit-hint-dismissed">
         {t('todos.editHint')}
@@ -257,7 +249,7 @@ export function HomeContent() {
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-      <TopBar onCreateList={handleOpenCreateModal} />
+      <TopBar onPlusClick={handleOpenCreateModal} />
 
       <CreateListModal
         open={isCreateModalOpen}
@@ -265,7 +257,7 @@ export function HomeContent() {
       />
 
       {/* Sticky header */}
-      <div className="sticky flex flex-col gap-2 top-0 z-40 bg-zinc-50 px-4 pt-4 pb-4 dark:bg-zinc-950">
+      <div className="sticky flex flex-col gap-6 top-0 z-40 bg-zinc-50 px-4 pt-4 pb-4 dark:bg-zinc-950">
         <Suspense fallback={<HomeGreetingSkeleton />}>
           <HomeGreeting />
         </Suspense>
@@ -273,13 +265,12 @@ export function HomeContent() {
           <HomeHeaderControls
             searchQuery={searchQuery}
             onSearchChange={handleSearchChange}
-            onCreateList={handleOpenCreateModal}
           />
         </Suspense>
       </div>
 
       {/* Scrollable content */}
-      <div className="px-4 pb-8">
+      <div className="px-4 pb-20 mt-2">
         <Suspense fallback={<HomeListsSkeleton />}>
           <HomeListsView
             searchQuery={searchQuery}

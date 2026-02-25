@@ -8,7 +8,9 @@
     "rename": "Rename",
     "create": "Create",
     "share": "Share",
-    "dragToReorder": "Drag to reorder"
+    "dragToReorder": "Drag to reorder",
+    "back": "Back",
+    "tryAgain": "Try again"
   },
   "auth": {
     "welcome": "Welcome to Fazer",
@@ -101,5 +103,33 @@
     "iosChromeDescription": "Get quick access and offline support. In Chrome, tap the menu (⋯) then \"Add to Home Screen\".",
     "iosOtherDescription": "Get quick access and offline support. Use your browser menu to \"Add to Home Screen\".",
     "install": "Install"
+  },
+  "error": {
+    "description": "Something didn't load right. Give it another shot, or refresh the page if it keeps happening."
+  },
+  "offline": {
+    "title": "You're offline",
+    "description": "Check your connection and try again."
+  },
+  "feedback": {
+    "title": "Send feedback",
+    "description": "Help us improve Fazer by sharing your thoughts.",
+    "footerCta": "Got a thought? We'd love to hear it.",
+    "type": {
+      "bug": "Bug",
+      "feature": "Feature",
+      "general": "General"
+    },
+    "messagePlaceholder": "Tell us what's on your mind...",
+    "includeScreenshot": "Include screenshot",
+    "screenshotCaptureFailed": "Could not capture screenshot.",
+    "submit": "Send feedback",
+    "submitting": "Sending...",
+    "submitSuccess": "Thanks for your feedback!",
+    "submitError": "Something went wrong. Please try again.",
+    "rateLimited": "You've sent too many messages. Please wait a few minutes.",
+    "nudgeMessage": "How's Fazer working for you?",
+    "nudgeAction": "Share feedback",
+    "reportThis": "Report this issue"
   }
 }

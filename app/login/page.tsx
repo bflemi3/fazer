@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
+import Image from 'next/image'
 import { Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -33,6 +34,13 @@ export default function LoginPage() {
       </div>
       <div className="w-full max-w-sm px-6">
         <div className="flex flex-col items-center gap-8">
+          <Image
+            src="/icons/icon-192x192.png"
+            alt="Fazer"
+            width={64}
+            height={64}
+            className="rounded-2xl"
+          />
           <div className="text-center">
             <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
               {t('welcome')}

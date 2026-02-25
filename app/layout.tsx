@@ -6,6 +6,7 @@ import { QueryProvider } from "@/components/query-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { SwUpdateNotifier } from "@/components/sw-update-notifier";
 import { InstallPrompt } from "@/components/install-prompt";
+import { Footer } from "@/components/footer";
 import { PostHogAnalytics } from "@/components/posthog-provider";
 import "./globals.css";
 
@@ -34,6 +35,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#8B5CF6" },
     { media: "(prefers-color-scheme: dark)", color: "#8B5CF6" },
@@ -60,6 +62,7 @@ export default function RootLayout({
                 {children}
                 <InstallPrompt />
                 <SwUpdateNotifier />
+                <Footer />
               </LocaleProvider>
               <Toaster />
             </PostHogAnalytics>

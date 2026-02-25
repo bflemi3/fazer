@@ -57,7 +57,7 @@ export function SharedListContent({ list, ownerProfile, shareToken }: Props) {
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-      <div className="px-4 pt-4 pb-8">
+      <div className="px-4 pt-4 pb-20">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
