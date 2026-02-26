@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.0.1
+
+- Fixed text getting highlighted when tapping lists on mobile.
+- Trimmed release notes.
+
 ## v1.0.0
 
 - Send us feedback right from the app — bugs, feature requests, or general thoughts.
