@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.1.3
+
+- Buttons, modal descriptions, and changelog text are now larger and easier to read on mobile.
+
 ## v1.1.2
 
 - Toast notification text is now easier to read on mobile.
