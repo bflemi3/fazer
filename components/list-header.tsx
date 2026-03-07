@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense, useState, useRef, useEffect, useCallback, memo } from 'react'
+import posthog from 'posthog-js'
 import Link from 'next/link'
 import { ArrowLeft, MoreHorizontal, Trash2, Share2, ListChecks, RotateCcw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -137,6 +138,7 @@ const ListTitle = memo(function ListTitle({ listId }: { listId: string }) {
 // Owns delete dialog state, profile check for isOwner, and delete mutation.
 
 const ListActions = memo(function ListActions({ listId, onShowShareModal }: { listId: string; onShowShareModal: () => void }) {
+  const { data: listName } = useSuspenseList(listId, { select: selectName })
   const { data: ownerId } = useSuspenseList(listId, { select: selectOwnerId })
   const { data: completedCount } = useSuspenseTodos(listId, { select: selectCompletedCount })
   const { profile } = useProfile()
@@ -152,7 +154,9 @@ const ListActions = memo(function ListActions({ listId, onShowShareModal }: { li
   const [showDeleteCompletedDialog, setShowDeleteCompletedDialog] = useState(false)
 
   async function handleDeleteList() {
+    const name = listName
     await deleteList.mutateAsync(listId)
+    posthog.capture('list_deleted', { list_id: listId, list_name: name })
     router.push('/')
   }
 

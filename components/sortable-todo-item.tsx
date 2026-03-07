@@ -12,11 +12,15 @@ import type { Todo } from '@/lib/hooks/use-todos'
 type Props = {
   todoId: string
   listId: string
+  onCompleted?: (todoId: string, todoTitle: string) => void
+  onDeleted?: (todoId: string, todoTitle: string) => void
 }
 
 export const SortableTodoItem = memo(function SortableTodoItem({
   todoId,
   listId,
+  onCompleted,
+  onDeleted,
 }: Props) {
   const t = useTranslations()
   const { data: todos } = useSuspenseTodos(listId)
@@ -58,7 +62,7 @@ export const SortableTodoItem = memo(function SortableTodoItem({
         <GripVertical className="h-5 w-5" />
       </button>
       <div className="min-w-0 flex-1">
-        <TodoItem todo={todo} listId={listId} />
+        <TodoItem todo={todo} listId={listId} onCompleted={onCompleted} onDeleted={onDeleted} />
       </div>
     </div>
   )

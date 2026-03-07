@@ -58,10 +58,13 @@ function PostHogNewUserDetection() {
     const params = new URLSearchParams(window.location.search)
     if (params.get('new_user') !== '1') return
 
-    const referredByShare = localStorage.getItem('fazer-referred-by-share')
-    const referredBy = referredByShare ? 'share_link' : 'organic'
+    const referralData = localStorage.getItem('fazer-referred-by-share')
+    let referralProps: Record<string, string> = {}
+    if (referralData) {
+      try { referralProps = JSON.parse(referralData) } catch {}
+    }
 
-    posthog.capture('user_signed_up', { referred_by: referredBy })
+    posthog.capture('user_signed_up', referralProps)
 
     localStorage.removeItem('fazer-referred-by-share')
 

@@ -50,7 +50,11 @@ export function ListContent({ list }: Props) {
     const params = new URLSearchParams(window.location.search)
     const fromShare = params.get('from_share')
     if (fromShare) {
-      posthog.capture('share_link_visited', { list_id: list.id, share_token: fromShare })
+      const trackingKey = `fazer-share-tracked:${fromShare}`
+      if (!localStorage.getItem(trackingKey)) {
+        posthog.capture('share_link_visited', { list_id: list.id, share_token: fromShare })
+        localStorage.setItem(trackingKey, '1')
+      }
       window.history.replaceState({}, '', `/l/${list.id}`)
     }
   }, [list.id])
