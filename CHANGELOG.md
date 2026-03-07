@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.1.1
+
+- Bigger buttons, icons, and text on mobile for easier tapping and reading.
+- Menus and toast notifications are now more comfortable to use on smaller screens.
+
 ## v1.1.0
 
 - Better analytics to help us understand how you use Fazer and improve the experience.
