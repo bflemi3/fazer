@@ -18,8 +18,8 @@ export function BackButton() {
   }
 
   return (
-    <Button variant="ghost" size="sm" className="-ml-2" onClick={handleClick}>
-      <ArrowLeft className="size-4" />
+    <Button variant="ghost" className="-ml-2 text-base" onClick={handleClick}>
+      <ArrowLeft />
       {t("common.back")}
     </Button>
   );

@@ -17,12 +17,12 @@ const components: Components = {
   h3: (props) => (
     <h3 className="mt-6 text-base font-medium" {...props} />
   ),
-  p: (props) => <p className="mt-4 text-sm leading-relaxed" {...props} />,
+  p: (props) => <p className="mt-4 text-base sm:text-sm leading-relaxed" {...props} />,
   ul: (props) => <ul className="mt-4 list-disc space-y-1.5 pl-6" {...props} />,
   ol: (props) => (
     <ol className="mt-4 list-decimal space-y-1.5 pl-6" {...props} />
   ),
-  li: (props) => <li className="text-sm leading-relaxed" {...props} />,
+  li: (props) => <li className="text-base sm:text-sm leading-relaxed" {...props} />,
   a: (props) => (
     <a
       className="font-medium underline underline-offset-4 hover:text-muted-foreground"
@@ -42,7 +42,7 @@ const components: Components = {
   hr: () => <hr className="my-8 border-border" />,
   blockquote: (props) => (
     <blockquote
-      className="mt-4 border-l-2 border-border pl-4 text-sm italic text-muted-foreground"
+      className="mt-4 border-l-2 border-border pl-4 text-base sm:text-sm italic text-muted-foreground"
       {...props}
     />
   ),
@@ -55,7 +55,7 @@ export default function ChangelogPage() {
   return (
     <main className="px-4 pt-4 pb-8">
       <BackButton />
-      <article className="mt-6">
+      <article className="mt-4">
         <Markdown components={components}>{content}</Markdown>
       </article>
     </main>
