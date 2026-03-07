@@ -114,7 +114,7 @@ export function SharedListContent({ list, ownerProfile, shareToken }: Props) {
           </div>
         ) : (
           <div className="py-16 text-center">
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="text-base text-zinc-500 dark:text-zinc-400">
               {t('todos.empty')}
             </p>
           </div>

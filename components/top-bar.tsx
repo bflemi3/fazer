@@ -17,7 +17,7 @@ export const TopBar = memo(function TopBar({ onPlusClick }: Props) {
         size="icon"
         onClick={onPlusClick}
       >
-        <Plus className="h-4 w-4" />
+        <Plus />
       </Button>
       <SettingsButton />
     </div>

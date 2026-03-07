@@ -105,7 +105,7 @@ export const FeedbackForm = memo(function FeedbackForm({ defaultType, onClose }:
 
       {/* Screenshot toggle */}
       <label className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 text-base sm:text-sm text-muted-foreground">
           <Camera className="h-4 w-4" />
           {t('includeScreenshot')}
         </div>

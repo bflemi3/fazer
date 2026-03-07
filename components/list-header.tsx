@@ -169,7 +169,7 @@ const ListActions = memo(function ListActions({ listId, onShowShareModal }: { li
           className="hidden sm:inline-flex"
           onClick={onShowShareModal}
         >
-          <Share2 className="h-4 w-4" />
+          <Share2  />
           {t('common.share')}
         </Button>
         <Button
@@ -178,12 +178,12 @@ const ListActions = memo(function ListActions({ listId, onShowShareModal }: { li
           className="sm:hidden"
           onClick={onShowShareModal}
         >
-          <Share2 className="h-4 w-4" />
+          <Share2 />
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon">
-              <MoreHorizontal className="h-4 w-4" />
+              <MoreHorizontal  />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -309,12 +309,11 @@ export const ListHeader = memo(function ListHeader({
         <div className="flex min-h-9 items-center">
           <Button
             variant="ghost"
-            size="sm"
-            className="-ml-2"
+            className="-ml-2 text-base"
             asChild
           >
             <Link href="/">
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft />
               {t('lists.title')}
             </Link>
           </Button>

@@ -23,7 +23,7 @@ export function Footer() {
         <button
           type="button"
           onClick={handleOpenFeedback}
-          className="w-full px-4 py-3 text-center text-xs text-muted-foreground hover:text-foreground transition-colors active:scale-[0.98]"
+          className="w-full px-4 py-3 text-center text-sm text-muted-foreground hover:text-foreground transition-colors active:scale-[0.98]"
         >
           {t('footerCta')}
         </button>
