@@ -161,7 +161,7 @@ const CompletedTodoList = memo(function CompletedTodoList({ listId, onCompleted,
     <div>
       <button
         onClick={handleToggle}
-        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-zinc-500 hover:bg-zinc-100 active:scale-[0.98] dark:text-zinc-400 dark:hover:bg-zinc-800"
+        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-base font-medium text-zinc-500 hover:bg-zinc-100 active:scale-[0.98] dark:text-zinc-400 dark:hover:bg-zinc-800"
       >
         <ChevronRight
           className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}
@@ -329,7 +329,7 @@ export function TodoList({ listId, triggerCreateRef }: TodoListProps) {
             placeholder={t('todos.newTodoPlaceholder')}
             className="bg-white dark:bg-zinc-900"
           />
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:block">
             {t('todos.createHint')}
           </p>
         </div>

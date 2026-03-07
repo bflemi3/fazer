@@ -50,7 +50,7 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
       <ResponsiveModalBody className="space-y-6">
         {/* Language */}
         <div>
-          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">
+          <label className="block text-base sm:text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">
             {t('settings.language')}
           </label>
           <div className="flex gap-2">
@@ -70,7 +70,7 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
 
         {/* Appearance */}
         <div>
-          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">
+          <label className="block text-base sm:text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">
             {t('settings.appearance')}
           </label>
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -104,7 +104,7 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
         <Link
           href="/changelog"
           onClick={onClose}
-          className="block text-center text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+          className="block text-center text-base text-muted-foreground/50 hover:text-muted-foreground transition-colors"
         >
           v{process.env.NEXT_PUBLIC_APP_VERSION}
         </Link>

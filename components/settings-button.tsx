@@ -18,7 +18,7 @@ export function SettingsButton() {
         onClick={() => setOpen(true)}
         aria-label={t('common.settings')}
       >
-        <Settings className="h-4 w-4" />
+        <Settings />
       </Button>
 
       <SettingsModal open={open} onClose={() => setOpen(false)} />

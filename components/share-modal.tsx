@@ -90,7 +90,7 @@ export function ShareModal({ listId, shareToken, open, onClose }: Props) {
                     avatarUrl={member.avatar_url}
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                    <p className="truncate text-base font-medium text-zinc-900 dark:text-zinc-50">
                       {member.display_name || member.email}
                       {member.id === currentUserId && (
                         <span className="ml-1 font-normal text-zinc-500 dark:text-zinc-400">
@@ -99,7 +99,7 @@ export function ShareModal({ listId, shareToken, open, onClose }: Props) {
                       )}
                     </p>
                     {member.role === 'owner' && (
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <p className="text-sm text-zinc-500 dark:text-zinc-400">
                         {t('owner')}
                       </p>
                     )}

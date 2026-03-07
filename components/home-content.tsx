@@ -67,7 +67,7 @@ function HomeGreeting() {
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           {t('auth.welcomeBack')}, {firstName}
         </h1>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="text-base text-zinc-600 dark:text-zinc-400">
           {t('lists.title')}
         </p>
       </div>

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Lightbulb, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { Button } from '@/components/ui/button'
 
 type HintProps = {
   storageKey: string
@@ -32,13 +33,14 @@ export function Hint({ storageKey, icon, action, children }: HintProps) {
       {icon === undefined ? <Lightbulb className="h-4 w-4 shrink-0" /> : icon}
       <span className="flex-1">{children}</span>
       {action}
-      <button
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={dismiss}
-        className="shrink-0 rounded p-0.5 hover:bg-primary/10 dark:hover:bg-primary/20"
         aria-label={t('common.close')}
       >
-        <X className="h-4 w-4" />
-      </button>
+        <X />
+      </Button>
     </div>
   )
 }
