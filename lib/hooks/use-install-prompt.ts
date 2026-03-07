@@ -42,7 +42,7 @@ export function useInstallPrompt() {
     try {
       const key = 'fazer-install-tracked'
       if (!localStorage.getItem(key)) {
-        posthog.capture('app_installed', { method: 'standalone_detection' })
+        posthog.capture('pwa_installed')
         localStorage.setItem(key, '1')
       }
     } catch {
@@ -55,12 +55,13 @@ export function useInstallPrompt() {
     function handleBeforeInstallPrompt(e: Event) {
       e.preventDefault()
       setDeferredPrompt(e as BeforeInstallPromptEvent)
+      posthog.capture('pwa_prompt_shown')
     }
 
     function handleAppInstalled() {
       setDeferredPrompt(null)
       setIsInstalled(true)
-      posthog.capture('app_installed', { method: 'native_prompt' })
+      posthog.capture('pwa_installed')
     }
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)

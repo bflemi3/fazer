@@ -46,7 +46,7 @@
 - Mobile-first layout and comfortable touch targets.
 - All buttons and interactive elements must provide **touch feedback** (e.g., active/pressed state via `active:scale-95` or similar) so the user has tactile confirmation of taps.
 - Light and dark mode support.
-- Default to the user’s system color scheme.
+- Default to the user's system color scheme.
 - UI should feel fast, unobtrusive, and predictable.
 
 ### Responsive modal pattern
@@ -290,6 +290,48 @@ Authenticated users can submit feedback directly from the app. Feedback is sent 
 - PostHog for privacy-conscious product analytics.
 - Tracks page views, page leaves, and essential events (auth, list/item actions, share usage).
 - Does not collect sensitive content (e.g., full todo text).
+
+### Tracked events
+
+| Event | Properties | When it fires |
+|---|---|---|
+| `user_signed_up` | `referral_token`, `referral_list_id`, `referred_by_user_id` (empty if organic) | New user signup (via `?new_user=1` param) |
+| `list_created` | `list_id`, `list_name`, `is_first_list` | User creates a list |
+| `list_deleted` | `list_id`, `list_name` | User deletes a list |
+| `list_shared` | `list_id`, `list_name`, `method` (`link` or `direct`) | User shares a list (copies link or direct shares) |
+| `item_created` | `list_id`, `list_name`, `item_id`, `item_name`, `added_by_role` (`owner` or `collaborator`) | User adds a todo item |
+| `item_completed` | `list_id`, `list_name`, `item_id`, `item_name`, `added_by_role` (`owner` or `collaborator`) | User completes a todo item (not uncomplete) |
+| `item_deleted` | `list_id`, `list_name`, `item_id`, `item_name`, `deleted_by_role` (`owner` or `collaborator`) | User deletes a todo item |
+| `share_link_visited` | `list_id`, `share_token` | First time a user visits a share link (deduplicated per user per token via localStorage) |
+| `pwa_prompt_shown` | _(none)_ | Browser fires `beforeinstallprompt` (user eligible to install) |
+| `pwa_installed` | _(none)_ | User installs the PWA |
+| `$exception` | `$exception_message`, `$exception_source` | Unhandled error in error boundary |
+
+---
+
+## Direct share with known contacts (planned)
+
+Share a list directly with someone you've previously collaborated with, without sending a link. The list appears on their home page automatically.
+
+### UX
+
+- Share modal gains a **"Share with people"** section below the existing copy-link section
+- Shows avatars + names of users who are collaborators on any list the current user owns, excluding people already on this list
+- Tapping a contact immediately adds them as a collaborator on this list
+- Once added, they appear in the existing "People with access" section
+- If no known contacts exist, the section is hidden
+- No notifications — the list appears silently on the recipient's home page
+
+### Data layer
+
+- **Known contacts query** — distinct profiles from `list_collaborators` joined with `profiles`, filtered to lists owned by the current user, excluding collaborators already on the target list
+- **Direct share mutation** — insert into `list_collaborators` (same as link-based share, but triggered by the owner)
+- **RLS** — owner needs INSERT permission on `list_collaborators` for their own lists; verify existing policies or add a new one
+
+### Analytics
+
+- No new events required for collaboration rate metric — it depends only on `item_added` and `item_completed`, which fire regardless of how a user gained access
+- Consider adding a `list_shared` event with `method: 'link' | 'direct'` for tracking share method distribution
 
 ---
 

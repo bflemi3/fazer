@@ -2,6 +2,7 @@
 
 import { useState, memo } from 'react'
 import { useRouter } from 'next/navigation'
+import posthog from 'posthog-js'
 import { useTranslations } from 'next-intl'
 import { useCreateList, useLists } from '@/lib/hooks/use-lists'
 import {
@@ -30,7 +31,9 @@ export const CreateListModal = memo(function CreateListModal({ open, onClose }: 
     if (!name.trim()) return
 
     const position = lists ? lists.length : 0
+    const isFirstList = !lists || lists.length === 0
     const newList = await createList.mutateAsync({ name: name.trim(), position })
+    posthog.capture('list_created', { list_id: newList.id, list_name: newList.name, is_first_list: isFirstList })
     setName('')
     onClose()
     router.push(`/l/${newList.id}`)

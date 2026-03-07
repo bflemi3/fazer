@@ -14,9 +14,11 @@ import type { Todo } from '@/lib/hooks/use-todos'
 type Props = {
   todo: Todo
   listId: string
+  onCompleted?: (todoId: string, todoTitle: string) => void
+  onDeleted?: (todoId: string, todoTitle: string) => void
 }
 
-export const TodoItem = memo(function TodoItem({ todo, listId }: Props) {
+export const TodoItem = memo(function TodoItem({ todo, listId, onCompleted, onDeleted }: Props) {
   const t = useTranslations()
   const toggleTodo = useToggleTodo(listId)
   const deleteTodo = useDeleteTodo(listId)
@@ -45,7 +47,11 @@ export const TodoItem = memo(function TodoItem({ todo, listId }: Props) {
 
   function handleClick() {
     if (isEditing || longPress.shouldSuppress()) return
-    toggleTodo.mutateAsync({ id: todo.id, isComplete: !todo.is_complete })
+    const shouldTrack = !todo.is_complete
+    const { id, title } = todo
+    toggleTodo.mutateAsync({ id, isComplete: !todo.is_complete }).then(() => {
+      if (shouldTrack) onCompleted?.(id, title)
+    })
   }
 
   async function handleSave() {
@@ -77,7 +83,13 @@ export const TodoItem = memo(function TodoItem({ todo, listId }: Props) {
     >
       <Checkbox
         checked={todo.is_complete}
-        onCheckedChange={() => toggleTodo.mutateAsync({ id: todo.id, isComplete: !todo.is_complete })}
+        onCheckedChange={() => {
+          const shouldTrack = !todo.is_complete
+          const { id, title } = todo
+          toggleTodo.mutateAsync({ id, isComplete: !todo.is_complete }).then(() => {
+            if (shouldTrack) onCompleted?.(id, title)
+          })
+        }}
         onClick={(e) => e.stopPropagation()}
       />
       {isEditing ? (
@@ -108,7 +120,10 @@ export const TodoItem = memo(function TodoItem({ todo, listId }: Props) {
         className="text-zinc-400 hover:text-red-600 dark:text-zinc-500 dark:hover:text-red-400 sm:opacity-0 sm:group-hover:opacity-100"
         onClick={(e) => {
           e.stopPropagation()
-          deleteTodo.mutate(todo.id)
+          const { id, title } = todo
+          deleteTodo.mutate(id, {
+            onSuccess: () => onDeleted?.(id, title),
+          })
         }}
       >
         <X className="h-4 w-4" />

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo, useCallback, memo } from 'react'
 import { Plus, ChevronRight } from 'lucide-react'
+import posthog from 'posthog-js'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import {
@@ -22,6 +23,8 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable'
 import { useCreateTodo, useSuspenseTodos, useReorderTodos } from '@/lib/hooks/use-todos'
+import { useSuspenseList } from '@/lib/hooks/use-lists'
+import { useProfile } from '@/lib/hooks/use-profile'
 import { useRealtimeInvalidation } from '@/lib/hooks/use-realtime-invalidation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -45,9 +48,20 @@ const selectCompletedTodos = (todos: Todo[]) =>
 
 const selectTotalCount = (todos: Todo[]) => todos.length
 
+const selectListMeta = (list: { name: string; owner_id: string }) => ({
+  name: list.name,
+  ownerId: list.owner_id,
+})
+
 // --- IncompleteTodoList ---
 
-const IncompleteTodoList = memo(function IncompleteTodoList({ listId }: { listId: string }) {
+type ListSectionProps = {
+  listId: string
+  onCompleted?: (todoId: string, todoTitle: string) => void
+  onDeleted?: (todoId: string, todoTitle: string) => void
+}
+
+const IncompleteTodoList = memo(function IncompleteTodoList({ listId, onCompleted, onDeleted }: ListSectionProps) {
   const { data: incompleteTodos } = useSuspenseTodos(listId, { select: selectIncompleteTodos })
   const { data: todos } = useSuspenseTodos(listId)
   const reorderTodos = useReorderTodos(listId)
@@ -117,7 +131,7 @@ const IncompleteTodoList = memo(function IncompleteTodoList({ listId }: { listId
       <SortableContext items={localOrder} strategy={verticalListSortingStrategy}>
         <div className="grid gap-2">
           {localOrder.map((id) => (
-            <SortableTodoItem key={id} todoId={id} listId={listId} />
+            <SortableTodoItem key={id} todoId={id} listId={listId} onCompleted={onCompleted} onDeleted={onDeleted} />
           ))}
         </div>
       </SortableContext>
@@ -132,7 +146,7 @@ const IncompleteTodoList = memo(function IncompleteTodoList({ listId }: { listId
 
 // --- CompletedTodoList ---
 
-const CompletedTodoList = memo(function CompletedTodoList({ listId }: { listId: string }) {
+const CompletedTodoList = memo(function CompletedTodoList({ listId, onCompleted, onDeleted }: ListSectionProps) {
   const { data: completedTodos } = useSuspenseTodos(listId, { select: selectCompletedTodos })
   const t = useTranslations()
   const [isExpanded, setIsExpanded] = useState(false)
@@ -157,7 +171,7 @@ const CompletedTodoList = memo(function CompletedTodoList({ listId }: { listId: 
       {isExpanded && (
         <div className="mt-2 space-y-2">
           {completedTodos.map((todo) => (
-            <TodoItem key={todo.id} todo={todo} listId={listId} />
+            <TodoItem key={todo.id} todo={todo} listId={listId} onCompleted={onCompleted} onDeleted={onDeleted} />
           ))}
         </div>
       )}
@@ -174,6 +188,8 @@ type TodoListProps = {
 
 export function TodoList({ listId, triggerCreateRef }: TodoListProps) {
   const { data: totalCount } = useSuspenseTodos(listId, { select: selectTotalCount })
+  const { data: listMeta } = useSuspenseList(listId, { select: selectListMeta })
+  const { profile } = useProfile()
   const t = useTranslations()
 
   // Live updates: invalidate cache when other users change todos
@@ -183,6 +199,26 @@ export function TodoList({ listId, triggerCreateRef }: TodoListProps) {
     filter: `list_id=eq.${listId}`,
     queryKeys: [['todos', listId]],
   })
+
+  const handleDeleted = useCallback((todoId: string, todoTitle: string) => {
+    posthog.capture('item_deleted', {
+      list_id: listId,
+      list_name: listMeta.name,
+      item_id: todoId,
+      item_name: todoTitle,
+      deleted_by_role: profile?.id === listMeta.ownerId ? 'owner' : 'collaborator',
+    })
+  }, [listId, listMeta, profile?.id])
+
+  const handleCompleted = useCallback((todoId: string, todoTitle: string) => {
+    posthog.capture('item_completed', {
+      list_id: listId,
+      list_name: listMeta.name,
+      item_id: todoId,
+      item_name: todoTitle,
+      added_by_role: profile?.id === listMeta.ownerId ? 'owner' : 'collaborator',
+    })
+  }, [listId, listMeta, profile?.id])
 
   const createTodo = useCreateTodo(listId)
 
@@ -218,6 +254,15 @@ export function TodoList({ listId, triggerCreateRef }: TodoListProps) {
     createTodo.mutate(
       { listId, title, position: totalCount },
       {
+        onSuccess: (todo) => {
+          posthog.capture('item_created', {
+            list_id: listId,
+            list_name: listMeta.name,
+            item_id: todo.id,
+            item_name: todo.title,
+            added_by_role: profile?.id === listMeta.ownerId ? 'owner' : 'collaborator',
+          })
+        },
         onError: () => {
           toast(t('todos.createError'))
           setNewTodoTitle(title)
@@ -270,7 +315,7 @@ export function TodoList({ listId, triggerCreateRef }: TodoListProps) {
 
   return (
     <div className="space-y-4">
-      <IncompleteTodoList listId={listId} />
+      <IncompleteTodoList listId={listId} onCompleted={handleCompleted} onDeleted={handleDeleted} />
 
       {/* Inline create input */}
       {isCreating && (
@@ -290,7 +335,7 @@ export function TodoList({ listId, triggerCreateRef }: TodoListProps) {
         </div>
       )}
 
-      <CompletedTodoList listId={listId} />
+      <CompletedTodoList listId={listId} onCompleted={handleCompleted} onDeleted={handleDeleted} />
     </div>
   )
 }

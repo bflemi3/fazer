@@ -5,6 +5,7 @@ import { useState } from 'react'
 import posthog from 'posthog-js'
 import { useTranslations } from 'next-intl'
 import { Check, Copy, X } from 'lucide-react'
+import { useList } from '@/lib/hooks/use-lists'
 import { useCollaborators, useRemoveCollaborator } from '@/lib/hooks/use-collaborators'
 import { useProfile } from '@/lib/hooks/use-profile'
 import { Button } from '@/components/ui/button'
@@ -26,6 +27,7 @@ type Props = {
 
 export function ShareModal({ listId, shareToken, open, onClose }: Props) {
   const t = useTranslations('share')
+  const { data: listName } = useList(listId, { select: (l) => l.name })
   const { profile } = useProfile()
   const currentUserId = profile?.id
   const { data: members } = useCollaborators(listId)
@@ -40,7 +42,7 @@ export function ShareModal({ listId, shareToken, open, onClose }: Props) {
 
   async function handleCopy() {
     await navigator.clipboard.writeText(shareUrl)
-    posthog.capture('share_link_copied', { list_id: listId })
+    posthog.capture('list_shared', { list_id: listId, list_name: listName, method: 'link' })
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }

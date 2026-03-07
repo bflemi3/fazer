@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react'
 import { useRouter } from 'next/navigation'
+import posthog from 'posthog-js'
 import { useLongPress } from '@/lib/hooks/use-long-press'
 import { useTranslations } from 'next-intl'
 import { formatDistanceToNow } from 'date-fns'
@@ -112,7 +113,9 @@ export const ListItem = memo(function ListItem({ listId }: Props) {
   }
 
   async function handleDelete() {
+    const name = listName
     await deleteList.mutateAsync(listId)
+    posthog.capture('list_deleted', { list_id: listId, list_name: name })
     setShowDeleteDialog(false)
   }
 
