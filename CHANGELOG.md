@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.1.0
+
+- Better analytics to help us understand how you use Fazer and improve the experience.
+
 ## v1.0.1
 
 - Fixed text getting highlighted when tapping lists on mobile.
