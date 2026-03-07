@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.1.2
+
+- Toast notification text is now easier to read on mobile.
+
 ## v1.1.1
 
 - Bigger buttons, icons, and text on mobile for easier tapping and reading.
