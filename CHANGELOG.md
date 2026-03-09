@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.2.0
+
+- Share lists directly with people you've collaborated with before — no link needed.
+
 ## v1.1.3
 
 - Buttons, modal descriptions, and changelog text are now larger and easier to read on mobile.
