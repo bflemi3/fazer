@@ -308,7 +308,7 @@ Authenticated users can submit feedback directly from the app. Feedback is sent 
 
 ---
 
-## Direct share with known contacts (planned)
+## Direct share with known contacts (complete — v1.2.0)
 
 Share a list directly with someone you've previously collaborated with, without sending a link. The list appears on their home page automatically.
 
