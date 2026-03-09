@@ -1,6 +1,7 @@
 import { useQuery, useSuspenseQuery, useMutation, useQueryClient, queryOptions } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import type { Tables } from '@/supabase/database.types'
+import type { KnownContact } from './use-known-contacts'
 
 export type ListMember = {
   id: string
@@ -65,6 +66,15 @@ async function fetchListMembers(listId: string): Promise<ListMember[]> {
   return members
 }
 
+async function addCollaborator({ listId, userId }: { listId: string; userId: string }): Promise<void> {
+  const supabase = createClient()
+  const { error } = await supabase
+    .from('list_collaborators')
+    .insert({ list_id: listId, user_id: userId })
+
+  if (error) throw error
+}
+
 async function removeCollaborator({ listId, userId }: { listId: string; userId: string }): Promise<void> {
   const supabase = createClient()
   const { error } = await supabase
@@ -114,6 +124,57 @@ export function useRemoveCollaborator(listId: string) {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey })
+    },
+  })
+}
+
+export function useAddCollaborator(listId: string, currentUserId: string) {
+  const queryClient = useQueryClient()
+  const collabKey = collaboratorsQueryOptions(listId).queryKey
+  const contactsKey = ['known-contacts', currentUserId]
+
+  return useMutation({
+    mutationFn: addCollaborator,
+    onMutate: async ({ userId }) => {
+      await queryClient.cancelQueries({ queryKey: collabKey })
+      await queryClient.cancelQueries({ queryKey: contactsKey })
+
+      const previousMembers = queryClient.getQueryData<ListMember[]>(collabKey)
+      const previousContacts = queryClient.getQueryData<KnownContact[]>(contactsKey)
+
+      // Move the contact from known-contacts to collaborators
+      const contact = previousContacts?.find((c) => c.id === userId)
+
+      if (contact) {
+        queryClient.setQueryData<ListMember[]>(collabKey, (old) => [
+          ...(old ?? []),
+          {
+            id: contact.id,
+            display_name: contact.display_name,
+            email: contact.email,
+            avatar_url: contact.avatar_url,
+            role: 'collaborator',
+          },
+        ])
+
+        queryClient.setQueryData<KnownContact[]>(contactsKey, (old) =>
+          old?.filter((c) => c.id !== userId)
+        )
+      }
+
+      return { previousMembers, previousContacts }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousMembers) {
+        queryClient.setQueryData(collabKey, context.previousMembers)
+      }
+      if (context?.previousContacts) {
+        queryClient.setQueryData(contactsKey, context.previousContacts)
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: collabKey })
+      queryClient.invalidateQueries({ queryKey: contactsKey })
     },
   })
 }

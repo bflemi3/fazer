@@ -2,11 +2,10 @@
 
 
 import { useState } from 'react'
-import posthog from 'posthog-js'
 import { useTranslations } from 'next-intl'
 import { Check, Copy, X } from 'lucide-react'
-import { useList } from '@/lib/hooks/use-lists'
 import { useCollaborators, useRemoveCollaborator } from '@/lib/hooks/use-collaborators'
+import { KnownContactsList } from './known-contacts-list'
 import { useProfile } from '@/lib/hooks/use-profile'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,7 +26,6 @@ type Props = {
 
 export function ShareModal({ listId, shareToken, open, onClose }: Props) {
   const t = useTranslations('share')
-  const { data: listName } = useList(listId, { select: (l) => l.name })
   const { profile } = useProfile()
   const currentUserId = profile?.id
   const { data: members } = useCollaborators(listId)
@@ -42,7 +40,6 @@ export function ShareModal({ listId, shareToken, open, onClose }: Props) {
 
   async function handleCopy() {
     await navigator.clipboard.writeText(shareUrl)
-    posthog.capture('list_shared', { list_id: listId, list_name: listName, method: 'link' })
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -76,10 +73,18 @@ export function ShareModal({ listId, shareToken, open, onClose }: Props) {
           </Button>
         </div>
 
+        {/* Share with known contacts */}
+        {isOwner && members && (
+          <KnownContactsList
+            listId={listId}
+            existingMemberIds={members.map((m) => m.id)}
+          />
+        )}
+
         {/* People with access */}
         {members && members.length > 0 && (
           <div>
-            <h3 className="mb-3 text-sm font-medium text-zinc-900 dark:text-zinc-50">
+            <h3 className="mb-3 text-base sm:text-sm font-medium text-zinc-900 dark:text-zinc-50">
               {t('peopleWithAccess')}
             </h3>
             <div className="space-y-2">

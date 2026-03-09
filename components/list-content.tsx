@@ -52,7 +52,7 @@ export function ListContent({ list }: Props) {
     if (fromShare) {
       const trackingKey = `fazer-share-tracked:${fromShare}`
       if (!localStorage.getItem(trackingKey)) {
-        posthog.capture('share_link_visited', { list_id: list.id, share_token: fromShare })
+        posthog.capture('list_shared', { list_id: list.id, share_token: fromShare, method: 'link' })
         localStorage.setItem(trackingKey, '1')
       }
       window.history.replaceState({}, '', `/l/${list.id}`)

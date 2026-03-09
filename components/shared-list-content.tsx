@@ -25,7 +25,7 @@ export function SharedListContent({ list, ownerProfile, shareToken }: Props) {
   useEffect(() => {
     const trackingKey = `fazer-share-tracked:${shareToken}`
     if (!localStorage.getItem(trackingKey)) {
-      posthog.capture('share_link_visited', { list_id: list.id, share_token: shareToken })
+      posthog.capture('list_shared', { list_id: list.id, share_token: shareToken, method: 'link' })
       localStorage.setItem(trackingKey, '1')
     }
     localStorage.setItem('fazer-referred-by-share', JSON.stringify({

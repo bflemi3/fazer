@@ -298,11 +298,10 @@ Authenticated users can submit feedback directly from the app. Feedback is sent 
 | `user_signed_up` | `referral_token`, `referral_list_id`, `referred_by_user_id` (empty if organic) | New user signup (via `?new_user=1` param) |
 | `list_created` | `list_id`, `list_name`, `is_first_list` | User creates a list |
 | `list_deleted` | `list_id`, `list_name` | User deletes a list |
-| `list_shared` | `list_id`, `list_name`, `method` (`link` or `direct`) | User shares a list (copies link or direct shares) |
+| `list_shared` | `list_id`, `list_name`, `share_token` (link only), `method` (`link` or `direct`) | A user gains access to a list — via share link visit (deduplicated per user per token) or direct share by owner |
 | `item_created` | `list_id`, `list_name`, `item_id`, `item_name`, `added_by_role` (`owner` or `collaborator`) | User adds a todo item |
 | `item_completed` | `list_id`, `list_name`, `item_id`, `item_name`, `added_by_role` (`owner` or `collaborator`) | User completes a todo item (not uncomplete) |
 | `item_deleted` | `list_id`, `list_name`, `item_id`, `item_name`, `deleted_by_role` (`owner` or `collaborator`) | User deletes a todo item |
-| `share_link_visited` | `list_id`, `share_token` | First time a user visits a share link (deduplicated per user per token via localStorage) |
 | `pwa_prompt_shown` | _(none)_ | Browser fires `beforeinstallprompt` (user eligible to install) |
 | `pwa_installed` | _(none)_ | User installs the PWA |
 | `$exception` | `$exception_message`, `$exception_source` | Unhandled error in error boundary |
@@ -331,7 +330,7 @@ Share a list directly with someone you've previously collaborated with, without 
 ### Analytics
 
 - No new events required for collaboration rate metric — it depends only on `item_added` and `item_completed`, which fire regardless of how a user gained access
-- Consider adding a `list_shared` event with `method: 'link' | 'direct'` for tracking share method distribution
+- `list_shared` event with `method: 'direct'` fires when owner adds a contact directly
 
 ---
 
