@@ -300,8 +300,14 @@ export const ListHeader = memo(function ListHeader({
 }) {
   const { data: shareToken } = useSuspenseList(listId, { select: selectShareToken })
   const t = useTranslations()
+  const router = useRouter()
   const [showShareModal, setShowShareModal] = useState(false)
   const handleShowShareModal = useCallback(() => setShowShareModal(true), [])
+
+  // Prefetch home page route so back navigation is instant
+  useEffect(() => {
+    router.prefetch('/')
+  }, [router])
 
   return (
     <>
