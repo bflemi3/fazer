@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.2.1
+
+- Going back to your lists from a list page is now faster and more responsive.
+
 ## v1.2.0
 
 - Share lists directly with people you've collaborated with before — no link needed.
