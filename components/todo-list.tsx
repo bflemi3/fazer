@@ -62,11 +62,10 @@ type ListSectionProps = {
 }
 
 type IncompleteListProps = ListSectionProps & {
-  justAddedIds: Set<string>
-  fadingIds: Set<string>
+  userId: string | undefined
 }
 
-const IncompleteTodoList = memo(function IncompleteTodoList({ listId, justAddedIds, fadingIds, onCompleted, onDeleted }: IncompleteListProps) {
+const IncompleteTodoList = memo(function IncompleteTodoList({ listId, userId, onCompleted, onDeleted }: IncompleteListProps) {
   const { data: incompleteTodos } = useSuspenseTodos(listId, { select: selectIncompleteTodos })
   const { data: todos } = useSuspenseTodos(listId)
   const reorderTodos = useReorderTodos(listId)
@@ -86,6 +85,74 @@ const IncompleteTodoList = memo(function IncompleteTodoList({ listId, justAddedI
   useEffect(() => {
     setLocalOrder(serverIncompleteIds)
   }, [serverIncompleteIds])
+
+  // Track "just added" items from collaborators
+  const [justAddedIds, setJustAddedIds] = useState<Set<string>>(() => new Set())
+  const [fadingIds, setFadingIds] = useState<Set<string>>(() => new Set())
+  const knownIdsRef = useRef<Set<string> | null>(null)
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
+
+  useEffect(() => {
+    const currentIds = new Set(todos.map((t) => t.id))
+
+    if (knownIdsRef.current === null) {
+      knownIdsRef.current = currentIds
+      return
+    }
+
+    const newCollabIds: string[] = []
+    for (const todo of todos) {
+      if (
+        !knownIdsRef.current.has(todo.id) &&
+        todo.created_by !== null &&
+        todo.created_by !== userId
+      ) {
+        newCollabIds.push(todo.id)
+      }
+    }
+
+    knownIdsRef.current = currentIds
+
+    if (newCollabIds.length > 0) {
+      setJustAddedIds((prev) => {
+        const next = new Set(prev)
+        for (const id of newCollabIds) next.add(id)
+        return next
+      })
+
+      const t1 = setTimeout(() => {
+        setJustAddedIds((prev) => {
+          const next = new Set(prev)
+          for (const id of newCollabIds) next.delete(id)
+          return next
+        })
+        setFadingIds((prev) => {
+          const next = new Set(prev)
+          for (const id of newCollabIds) next.add(id)
+          return next
+        })
+      }, 9000)
+
+      const t2 = setTimeout(() => {
+        setFadingIds((prev) => {
+          const next = new Set(prev)
+          for (const id of newCollabIds) next.delete(id)
+          return next
+        })
+      }, 10000)
+
+      timersRef.current.push(t1, t2)
+    }
+  }, [todos, userId])
+
+  // Clean up all timers on unmount
+  useEffect(() => {
+    const timers = timersRef
+    return () => {
+      for (const t of timers.current) clearTimeout(t)
+      timers.current = []
+    }
+  }, [])
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -201,7 +268,6 @@ type TodoListProps = {
 
 export function TodoList({ listId, triggerCreateRef }: TodoListProps) {
   const { data: totalCount } = useSuspenseTodos(listId, { select: selectTotalCount })
-  const { data: todos } = useSuspenseTodos(listId)
   const { data: listMeta } = useSuspenseList(listId, { select: selectListMeta })
   const { profile } = useProfile()
   const t = useTranslations()
@@ -213,64 +279,6 @@ export function TodoList({ listId, triggerCreateRef }: TodoListProps) {
     filter: `list_id=eq.${listId}`,
     queryKeys: [['todos', listId]],
   })
-
-  // Track "just added" items from collaborators
-  const [justAddedIds, setJustAddedIds] = useState<Set<string>>(() => new Set())
-  const [fadingIds, setFadingIds] = useState<Set<string>>(() => new Set())
-  const knownIdsRef = useRef<Set<string> | null>(null)
-
-  useEffect(() => {
-    const currentIds = new Set(todos.map((t) => t.id))
-
-    if (knownIdsRef.current === null) {
-      // First render — seed known IDs, don't flag anything
-      knownIdsRef.current = currentIds
-      return
-    }
-
-    const newCollabIds: string[] = []
-    for (const todo of todos) {
-      if (
-        !knownIdsRef.current.has(todo.id) &&
-        todo.created_by !== null &&
-        todo.created_by !== profile?.id
-      ) {
-        newCollabIds.push(todo.id)
-      }
-    }
-
-    knownIdsRef.current = currentIds
-
-    if (newCollabIds.length > 0) {
-      setJustAddedIds((prev) => {
-        const next = new Set(prev)
-        for (const id of newCollabIds) next.add(id)
-        return next
-      })
-
-      // After 9s, move to fading state (1s fade), then clear at 10s
-      setTimeout(() => {
-        setJustAddedIds((prev) => {
-          const next = new Set(prev)
-          for (const id of newCollabIds) next.delete(id)
-          return next
-        })
-        setFadingIds((prev) => {
-          const next = new Set(prev)
-          for (const id of newCollabIds) next.add(id)
-          return next
-        })
-      }, 9000)
-
-      setTimeout(() => {
-        setFadingIds((prev) => {
-          const next = new Set(prev)
-          for (const id of newCollabIds) next.delete(id)
-          return next
-        })
-      }, 10000)
-    }
-  }, [todos, profile?.id])
 
   const handleDeleted = useCallback((todoId: string, todoTitle: string) => {
     posthog.capture('item_deleted', {
@@ -387,7 +395,7 @@ export function TodoList({ listId, triggerCreateRef }: TodoListProps) {
 
   return (
     <div className="space-y-4">
-      <IncompleteTodoList listId={listId} justAddedIds={justAddedIds} fadingIds={fadingIds} onCompleted={handleCompleted} onDeleted={handleDeleted} />
+      <IncompleteTodoList listId={listId} userId={profile?.id} onCompleted={handleCompleted} onDeleted={handleDeleted} />
 
       {/* Inline create input */}
       {isCreating && (

@@ -121,31 +121,31 @@ export const TodoItem = memo(function TodoItem({ todo, listId, isJustAdded, isFa
         </span>
       )}
 
-      {isJustAdded && (
-        <span className={cn(
-          'shrink-0 rounded-md bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-600 dark:bg-violet-900/40 dark:text-violet-400',
-          isFading && 'animate-just-added-fade-out',
-        )}>
-          {t('todos.justAdded')}
-        </span>
-      )}
-
-      {!isJustAdded && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-zinc-400 hover:text-red-600 dark:text-zinc-500 dark:hover:text-red-400 sm:opacity-0 sm:group-hover:opacity-100"
-          onClick={(e) => {
-            e.stopPropagation()
-            const { id, title } = todo
-            deleteTodo.mutate(id, {
-              onSuccess: () => onDeleted?.(id, title),
-            })
-          }}
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      )}
+      <div className="flex min-h-9 shrink-0 items-center">
+        {isJustAdded ? (
+          <span className={cn(
+            'rounded-md bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-600 dark:bg-violet-900/40 dark:text-violet-400',
+            isFading && 'animate-just-added-fade-out',
+          )}>
+            {t('todos.justAdded')}
+          </span>
+        ) : (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-zinc-400 hover:text-red-600 dark:text-zinc-500 dark:hover:text-red-400 sm:opacity-0 sm:group-hover:opacity-100"
+            onClick={(e) => {
+              e.stopPropagation()
+              const { id, title } = todo
+              deleteTodo.mutate(id, {
+                onSuccess: () => onDeleted?.(id, title),
+              })
+            }}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
     </ListCard>
   )
 })
