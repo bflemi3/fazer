@@ -8,17 +8,20 @@ import { useLongPress } from '@/lib/hooks/use-long-press'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
+import { cn } from '@/lib/utils'
 import { ListCard } from '@/components/ui/list-card'
 import type { Todo } from '@/lib/hooks/use-todos'
 
 type Props = {
   todo: Todo
   listId: string
+  isJustAdded?: boolean
+  isFading?: boolean
   onCompleted?: (todoId: string, todoTitle: string) => void
   onDeleted?: (todoId: string, todoTitle: string) => void
 }
 
-export const TodoItem = memo(function TodoItem({ todo, listId, onCompleted, onDeleted }: Props) {
+export const TodoItem = memo(function TodoItem({ todo, listId, isJustAdded, isFading, onCompleted, onDeleted }: Props) {
   const t = useTranslations()
   const toggleTodo = useToggleTodo(listId)
   const deleteTodo = useDeleteTodo(listId)
@@ -79,7 +82,11 @@ export const TodoItem = memo(function TodoItem({ todo, listId, onCompleted, onDe
     <ListCard
       onClick={handleClick}
       {...longPress.handlers}
-      className="group flex cursor-pointer items-center gap-3"
+      className={cn(
+        'group flex cursor-pointer items-center gap-3',
+        isJustAdded && 'border-dashed border-violet-400 dark:border-violet-500',
+        isFading && 'animate-just-added-fade-border',
+      )}
     >
       <Checkbox
         checked={todo.is_complete}
@@ -114,20 +121,31 @@ export const TodoItem = memo(function TodoItem({ todo, listId, onCompleted, onDe
         </span>
       )}
 
-      <Button
-        variant="ghost"
-        size="icon"
-        className="text-zinc-400 hover:text-red-600 dark:text-zinc-500 dark:hover:text-red-400 sm:opacity-0 sm:group-hover:opacity-100"
-        onClick={(e) => {
-          e.stopPropagation()
-          const { id, title } = todo
-          deleteTodo.mutate(id, {
-            onSuccess: () => onDeleted?.(id, title),
-          })
-        }}
-      >
-        <X className="h-4 w-4" />
-      </Button>
+      {isJustAdded && (
+        <span className={cn(
+          'shrink-0 rounded-md bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-600 dark:bg-violet-900/40 dark:text-violet-400',
+          isFading && 'animate-just-added-fade-out',
+        )}>
+          {t('todos.justAdded')}
+        </span>
+      )}
+
+      {!isJustAdded && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-zinc-400 hover:text-red-600 dark:text-zinc-500 dark:hover:text-red-400 sm:opacity-0 sm:group-hover:opacity-100"
+          onClick={(e) => {
+            e.stopPropagation()
+            const { id, title } = todo
+            deleteTodo.mutate(id, {
+              onSuccess: () => onDeleted?.(id, title),
+            })
+          }}
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      )}
     </ListCard>
   )
 })

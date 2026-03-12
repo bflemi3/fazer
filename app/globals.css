@@ -156,6 +156,45 @@
   animation: icon-scale 1s 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+@keyframes just-added-fade-out {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-just-added-fade-out {
+  animation: just-added-fade-out 1s ease-out forwards;
+}
+
+@keyframes just-added-fade-border {
+  0% {
+    border-color: oklch(0.606 0.25 292.717);
+  }
+  100% {
+    border-color: oklch(0.922 0 0);
+  }
+}
+
+.dark .animate-just-added-fade-border {
+  animation: just-added-fade-border-dark 1s ease-out forwards;
+}
+
+@keyframes just-added-fade-border-dark {
+  0% {
+    border-color: oklch(0.606 0.25 292.717);
+  }
+  100% {
+    border-color: oklch(1 0 0 / 10%);
+  }
+}
+
+.animate-just-added-fade-border {
+  animation: just-added-fade-border 1s ease-out forwards;
+}
+
 .animate-icon-pulse::after {
   content: '';
   position: absolute;

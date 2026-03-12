@@ -63,6 +63,7 @@
     "deleteTitle": "Excluir item",
     "deleteDescription": "Tem certeza que deseja excluir este item?",
     "createError": "Falha ao adicionar item",
+    "justAdded": "Recém-adicionado",
     "completedCount": "{count} concluídos",
     "uncompleteAll": "Desmarcar todos",
     "deleteCompleted": "Excluir concluídos",
