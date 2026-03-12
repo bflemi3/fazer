@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.3.0
+
+- When someone adds an item to a shared list, you'll see a "Just added" indicator so you know what's new.
+- Fixed profile photos not loading for some users.
+
 ## v1.2.1
 
 - Going back to your lists from a list page is now faster and more responsive.
