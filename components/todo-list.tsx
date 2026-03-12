@@ -61,7 +61,11 @@ type ListSectionProps = {
   onDeleted?: (todoId: string, todoTitle: string) => void
 }
 
-const IncompleteTodoList = memo(function IncompleteTodoList({ listId, onCompleted, onDeleted }: ListSectionProps) {
+type IncompleteListProps = ListSectionProps & {
+  userId: string | undefined
+}
+
+const IncompleteTodoList = memo(function IncompleteTodoList({ listId, userId, onCompleted, onDeleted }: IncompleteListProps) {
   const { data: incompleteTodos } = useSuspenseTodos(listId, { select: selectIncompleteTodos })
   const { data: todos } = useSuspenseTodos(listId)
   const reorderTodos = useReorderTodos(listId)
@@ -81,6 +85,74 @@ const IncompleteTodoList = memo(function IncompleteTodoList({ listId, onComplete
   useEffect(() => {
     setLocalOrder(serverIncompleteIds)
   }, [serverIncompleteIds])
+
+  // Track "just added" items from collaborators
+  const [justAddedIds, setJustAddedIds] = useState<Set<string>>(() => new Set())
+  const [fadingIds, setFadingIds] = useState<Set<string>>(() => new Set())
+  const knownIdsRef = useRef<Set<string> | null>(null)
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
+
+  useEffect(() => {
+    const currentIds = new Set(todos.map((t) => t.id))
+
+    if (knownIdsRef.current === null) {
+      knownIdsRef.current = currentIds
+      return
+    }
+
+    const newCollabIds: string[] = []
+    for (const todo of todos) {
+      if (
+        !knownIdsRef.current.has(todo.id) &&
+        todo.created_by !== null &&
+        todo.created_by !== userId
+      ) {
+        newCollabIds.push(todo.id)
+      }
+    }
+
+    knownIdsRef.current = currentIds
+
+    if (newCollabIds.length > 0) {
+      setJustAddedIds((prev) => {
+        const next = new Set(prev)
+        for (const id of newCollabIds) next.add(id)
+        return next
+      })
+
+      const t1 = setTimeout(() => {
+        setJustAddedIds((prev) => {
+          const next = new Set(prev)
+          for (const id of newCollabIds) next.delete(id)
+          return next
+        })
+        setFadingIds((prev) => {
+          const next = new Set(prev)
+          for (const id of newCollabIds) next.add(id)
+          return next
+        })
+      }, 9000)
+
+      const t2 = setTimeout(() => {
+        setFadingIds((prev) => {
+          const next = new Set(prev)
+          for (const id of newCollabIds) next.delete(id)
+          return next
+        })
+      }, 10000)
+
+      timersRef.current.push(t1, t2)
+    }
+  }, [todos, userId])
+
+  // Clean up all timers on unmount
+  useEffect(() => {
+    const timers = timersRef
+    return () => {
+      for (const t of timers.current) clearTimeout(t)
+      timers.current = []
+    }
+  }, [])
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -131,7 +203,15 @@ const IncompleteTodoList = memo(function IncompleteTodoList({ listId, onComplete
       <SortableContext items={localOrder} strategy={verticalListSortingStrategy}>
         <div className="grid gap-2">
           {localOrder.map((id) => (
-            <SortableTodoItem key={id} todoId={id} listId={listId} onCompleted={onCompleted} onDeleted={onDeleted} />
+            <SortableTodoItem
+              key={id}
+              todoId={id}
+              listId={listId}
+              isJustAdded={justAddedIds.has(id)}
+              isFading={fadingIds.has(id)}
+              onCompleted={onCompleted}
+              onDeleted={onDeleted}
+            />
           ))}
         </div>
       </SortableContext>
@@ -315,7 +395,7 @@ export function TodoList({ listId, triggerCreateRef }: TodoListProps) {
 
   return (
     <div className="space-y-4">
-      <IncompleteTodoList listId={listId} onCompleted={handleCompleted} onDeleted={handleDeleted} />
+      <IncompleteTodoList listId={listId} userId={profile?.id} onCompleted={handleCompleted} onDeleted={handleDeleted} />
 
       {/* Inline create input */}
       {isCreating && (

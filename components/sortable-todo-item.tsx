@@ -12,6 +12,8 @@ import type { Todo } from '@/lib/hooks/use-todos'
 type Props = {
   todoId: string
   listId: string
+  isJustAdded?: boolean
+  isFading?: boolean
   onCompleted?: (todoId: string, todoTitle: string) => void
   onDeleted?: (todoId: string, todoTitle: string) => void
 }
@@ -19,6 +21,8 @@ type Props = {
 export const SortableTodoItem = memo(function SortableTodoItem({
   todoId,
   listId,
+  isJustAdded,
+  isFading,
   onCompleted,
   onDeleted,
 }: Props) {
@@ -62,7 +66,7 @@ export const SortableTodoItem = memo(function SortableTodoItem({
         <GripVertical className="h-5 w-5" />
       </button>
       <div className="min-w-0 flex-1">
-        <TodoItem todo={todo} listId={listId} onCompleted={onCompleted} onDeleted={onDeleted} />
+        <TodoItem todo={todo} listId={listId} isJustAdded={isJustAdded || isFading} isFading={isFading} onCompleted={onCompleted} onDeleted={onDeleted} />
       </div>
     </div>
   )
